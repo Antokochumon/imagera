@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imagera AI - Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --accent: #ec4899;
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --bg3: #334155;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.15), transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.15), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 400% 400%;
+      background-attachment: fixed;
+      animation: gradientBG 12s ease infinite;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .logo-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      text-align: center;
+      padding: 1rem;
+      width: 100%;
+    }
+    
+    .app-logo {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.6));
+      margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .app-name {
+      margin-top: 0.5rem;
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .app-tagline {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+      opacity: 0.8;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+    
+    .bottom-loader {
+      width: 100%;
+      max-width: 500px;
+      background: var(--glass);
+      padding: 1.25rem;
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      z-index: 2;
+    }
+    
+    .progress-container {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+      position: relative;
+      border-radius: 4px;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: shine 1.5s infinite;
+      border-radius: 4px;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%) skewX(-20deg); }
+      100% { transform: translateX(100%) skewX(-20deg); }
+    }
+    
+    .status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+    
+    .status {
+      color: var(--text);
+      font-weight: 500;
+    }
+    
+    .percentage {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    
+    .loading-dots::after {
+      content: '.';
+      animation: loadingDots 1.2s infinite steps(4);
+    }
+    
+    @keyframes loadingDots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60% { content: '...'; }
+      80%, 100% { content: ''; }
+    }
+    
+    @media (max-width: 768px) {
+      .app-logo {
+        width: 180px;
+        height: 180px;
+      }
+      
+      .app-name {
+        font-size: 1.8rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .app-logo {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .app-name {
+        font-size: 1.5rem;
+      }
+      
+      .app-tagline {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-container">
+    <img class="app-logo" src="assests/app icon.png" alt="Imagera AI Logo" />
+    <h1 class="app-name">Imagera AI</h1>
+    <p class="app-tagline">Next Generation AI Image Generator</p>
+  </div>
+
+  <div class="bottom-loader">
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="status-container">
+      <span class="status" id="status">Initializing AI models<span class="loading-dots"></span></span>
+      <span class="percentage" id="percentage">0%</span>
+    </div>
+  </div>
+
+  <script>
+    // Progress loader (faster loading)
+    let progress = 0;
+    const bar = document.getElementById('progress-bar');
+    const status = document.getElementById('status');
+    const percentage = document.getElementById('percentage');
+    
+    const messages = [
+      { p: 0, t: 'Initializing AI models' },
+      { p: 15, t: 'Loading neural networks' },
+      { p: 30, t: 'Processing image datasets' },
+      { p: 45, t: 'Training generators' },
+      { p: 60, t: 'Optimizing algorithms' },
+      { p: 75, t: 'Finalizing parameters' },
+      { p: 90, t: 'Preparing interface' },
+      { p: 95, t: 'Ready to create' }
+    ];
+    
+    // Faster loading with variable speeds
+    const interval = setInterval(() => {
+      // Base increment (faster than before)
+      let increment = 0.8;
+      
+      // Slow down slightly at certain points for realism
+      if (progress > 20 && progress < 30) increment = 0.5;
+      if (progress > 65 && progress < 75) increment = 0.4;
+      if (progress > 85) increment = 0.3;
+      
+      // Random small fluctuations
+      increment += (Math.random() * 0.4 - 0.2);
+      
+      progress = Math.min(progress + increment, 100);
+      bar.style.width = progress + '%';
+      percentage.textContent = Math.floor(progress) + '%';
+      
+      // Update status message
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (progress >= messages[i].p) {
+          status.textContent = messages[i].t;
+          break;
+        }
+      }
+      
+      // Complete loading
+      if (progress === 100) {
+        clearInterval(interval);
+        status.textContent = "Launching Imagera AI";
+        setTimeout(() => {
+          // Smooth transition
+          document.body.style.opacity = '0';
+          setTimeout(() => {
+            window.location.href = 'Ai media.html';
+          }, 300);
+        }, 500);
+      }
+    }, 30);
+  </script>
+</body>
+</html>

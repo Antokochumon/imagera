@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --secondary: #00b894;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --error: #d63031;
+            --warning: #fdcb6e;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: var(--dark);
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .generator-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background-color: #b2b2b2;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        .loading-state {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .gallery-section {
+            margin-top: 40px;
+        }
+
+        .gallery-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            aspect-ratio: 1/1;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--dark);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 90%;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background-color: var(--error);
+        }
+
+        .toast.success {
+            background-color: var(--secondary);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+
+            .generator-card {
+                padding: 20px;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            textarea {
+                min-height: 120px;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-magic"></i> AI Image Generator
+            </div>
+            <div class="tagline">
+                Transform your ideas into stunning visuals with AI
+            </div>
+        </header>
+
+        <div class="generator-card">
+            <h2 class="card-title">
+                <i class="fas fa-paint-brush"></i> Create New Image
+            </h2>
+
+            <div class="input-group">
+                <label for="image-prompt">Describe your image</label>
+                <textarea id="image-prompt" placeholder="Example: A majestic lion standing on a rock at sunset, digital art style, highly detailed, vibrant colors"></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label for="image-style">Art Style</label>
+                <select id="image-style">
+                    <option value="stable_diffusion">Stable Diffusion (Default)</option>
+                    <option value="Deliberate">Deliberate - Highly Detailed</option>
+                    <option value="DreamShaper">DreamShaper - Fantasy Art</option>
+                    <option value="Realistic">Realistic Vision</option>
+                    <option value="Arcane">Arcane Style</option>
+                    <option value="Ghibli">Studio Ghibli Style</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="image-ratio">Aspect Ratio</label>
+                <select id="image-ratio">
+                    <option value="512x512">Square (512×512)</option>
+                    <option value="768x512">Landscape (768×512)</option>
+                    <option value="512x768">Portrait (512×768)</option>
+                    <option value="1024x768">Wide (1024×768)</option>
+                </select>
+            </div>
+            
+            <button id="generate-btn" class="btn">
+                <i class="fas fa-sparkles"></i> Generate Image
+            </button>
+            
+            <div class="loading-state" id="loading-state">
+                <div class="spinner"></div>
+                <p id="loading-text">Initializing image generation...</p>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <p id="progress-text">Preparing request...</p>
+            </div>
+            
+            <div class="result-container" id="result-container">
+                <h3 class="card-title">
+                    <i class="fas fa-image"></i> Your Generated Image
+                </h3>
+                <img id="result-image" class="result-image" src="" alt="Generated image">
+                <div class="action-buttons">
+                    <button id="download-btn" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button id="delete-btn" class="btn" style="background-color: var(--error);">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="gallery-section">
+            <h3 class="gallery-title">
+                <i class="fas fa-images"></i> Your Gallery
+            </h3>
+            
+            <div class="gallery-grid" id="gallery-grid">
+                <!-- Images will be added here dynamically -->
+            </div>
+            
+            <div class="empty-gallery" id="empty-gallery">
+                <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                <p>Your generated images will appear here</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const generateBtn = document.getElementById('generate-btn');
+            const loadingState = document.getElementById('loading-state');
+            const resultContainer = document.getElementById('result-container');
+            const resultImage = document.getElementById('result-image');
+            const downloadBtn = document.getElementById('download-btn');
+            const deleteBtn = document.getElementById('delete-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const loadingText = document.getElementById('loading-text');
+            const progressText = document.getElementById('progress-text');
+            const galleryGrid = document.getElementById('gallery-grid');
+            const emptyGallery = document.getElementById('empty-gallery');
+            const toast = document.getElementById('toast');
+
+            // API Configuration
+            const STABLE_HORDE_API_KEY = 'Bi-aq4T72lBfF4UJjsMzNg';
+            const IMAGE_API_ENDPOINT = 'https://stablehorde.net/api/v2/generate/async';
+            const CHECK_STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/check/';
+            const STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/status/';
+
+            // App State
+            let generatedImageBlob = null;
+            let imageJobId = null;
+            let imageCheckInterval = null;
+            let storedImages = JSON.parse(localStorage.getItem('aiGeneratedImages') || '[]');
+
+            // Show toast notification
+            function showToast(message, type = '') {
+                toast.textContent = message;
+                toast.className = 'toast';
+                toast.classList.add(type, 'show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Load gallery images
+            function loadGalleryImages() {
+                galleryGrid.innerHTML = '';
+                
+                if (storedImages.length === 0) {
+                    emptyGallery.style.display = 'block';
+                    return;
+                }
+                
+                emptyGallery.style.display = 'none';
+                
+                storedImages.forEach((imgData, index) => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <img src="${imgData.url}" alt="Generated image ${index}" class="gallery-img">
+                        <button class="delete-btn" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    galleryGrid.appendChild(galleryItem);
+                    
+                    // Add click event to view image
+                    galleryItem.querySelector('img').addEventListener('click', () => {
+                        viewImageInGallery(index);
+                    });
+                    
+                    // Add delete event
+                    galleryItem.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteImageFromGallery(index);
+                    });
+                });
+            }
+
+            // View image from gallery
+            function viewImageInGallery(index) {
+                const imgData = storedImages[index];
+                resultImage.src = imgData.url;
+                
+                // Create a blob from the data URL for downloading
+                fetch(imgData.url)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        generatedImageBlob = blob;
+                        resultContainer.style.display = 'block';
+                        
+                        // Scroll to result
+                        resultContainer.scrollIntoView({ behavior: 'smooth' });
+                    });
+            }
+
+            // Delete image from gallery
+            function deleteImageFromGallery(index) {
+                storedImages.splice(index, 1);
+                localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
+                loadGalleryImages();
+                showToast('Image deleted from gallery', 'success');
+                
+                // If the deleted image is currently displayed, hide the result container
+                if (resultImage.src.includes(storedImages[index]?.url)) {
+                    resultContainer.style.display = 'none';
+                    generatedImageBlob = null;
+                }
+            }
+
+            // Store image locally
+            function storeImageLocally(imageBlob, prompt) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const imageData = {
+                        url: reader.result,
+                        timestamp: new Date().toISOString(),
+                        prompt: prompt,
+                        style: document.getElementById('image-style').value,
+                        ratio: document.getElementById('image-ratio').value
+                    };
+                    
+                    storedImages.unshift(imageData);
+                    localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
+                    loadGalleryImages();
+                };
+                reader.readAsDataURL(imageBlob);
+            }
+
+            // Initialize gallery
+            loadGalleryImages();
+
+            // Generate image
+            generateBtn.addEventListener('click', async function() {
+                const prompt = document.getElementById('image-prompt').value.trim();
+                if (!prompt) {
+                    showToast('Please enter a description for your image', 'error');
+                    return;
+                }
+
+                const style = document.getElementById('image-style').value;
+                const [width, height] = document.getElementById('image-ratio').value.split('x').map(Number);
+
+                // Show loading state
+                generateBtn.disabled = true;
+                loadingState.style.display = 'block';
+                resultContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+                loadingText.textContent = 'Initializing image generation...';
+                progressText.textContent = 'Preparing request...';
+
+                try {
+                    // Submit to Stable Horde
+                    loadingText.textContent = 'Connecting to AI server...';
+                    progressText.textContent = 'Starting request...';
+
+                    const response = await fetch(IMAGE_API_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': STABLE_HORDE_API_KEY
+                        },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            params: {
+                                width: width,
+                                height: height,
+                                steps: 30,
+                                sampler_name: "k_euler_a",
+                                cfg_scale: 7.5,
+                                n: 1
+                            },
+                            models: [style],
+                            nsfw: false
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to submit image request');
+                    }
+
+                    const data = await response.json();
+                    imageJobId = data.id;
+                    loadingText.textContent = 'Image generation in progress...';
+                    progressText.textContent = 'Waiting in queue...';
+
+                    // Start polling for image status
+                    imageCheckInterval = setInterval(() => checkImageStatus(), 3000);
+
+                } catch (error) {
+                    console.error('Image generation error:', error);
+                    showToast('Failed to start image generation', 'error');
+                    resetGenerationState();
+                }
+            });
+
+            // Check image generation status
+            async function checkImageStatus() {
+                if (!imageJobId) return;
+
+                try {
+                    const response = await fetch(`${CHECK_STATUS_ENDPOINT}${imageJobId}`);
+                    if (!response.ok) throw new Error('Failed to check status');
+                    
+                    const status = await response.json();
+                    
+                    if (status.faulted) {
+                        throw new Error('Image generation failed');
+                    }
+                    
+                    // Update queue position
+                    if (status.wait_time) {
+                        const waitTime = Math.round(status.wait_time);
+                        progressText.textContent = `Queue position: ${status.queue_position} • Est. wait: ${waitTime}s`;
+                    }
+                    
+                    // Update progress if generation has started
+                    if (status.finished && !status.done) {
+                        const progress = Math.round((status.finished / status.processing) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `Generating: ${progress}% complete (${status.finished}/${status.processing} steps)`;
+                    }
+                    
+                    // Check if generation is complete
+                    if (status.done) {
+                        clearInterval(imageCheckInterval);
+                        fetchGeneratedImage();
+                    }
+
+                } catch (error) {
+                    console.error('Error checking image status:', error);
+                    showToast('Failed to check generation status', 'error');
+                    clearInterval(imageCheckInterval);
+                    resetGenerationState();
+                }
+            }
+
+            // Fetch the generated image
+            async function fetchGeneratedImage() {
+                try {
+                    loadingText.textContent = 'Finalizing your image...';
+                    progressText.textContent = 'Processing final details...';
+                    progressBar.style.width = '95%';
+
+                    const response = await fetch(`${STATUS_ENDPOINT}${imageJobId}`);
+                    if (!response.ok) throw new Error('Failed to fetch image status');
+                    
+                    const status = await response.json();
+
+                    if (status.generations && status.generations.length > 0) {
+                        const imgUrl = status.generations[0].img;
+                        progressText.textContent = 'Downloading your image...';
+                        
+                        const imgResponse = await fetch(imgUrl);
+                        generatedImageBlob = await imgResponse.blob();
+
+                        // Store image locally
+                        storeImageLocally(generatedImageBlob, document.getElementById('image-prompt').value);
+
+                        // Display image
+                        resultImage.src = URL.createObjectURL(generatedImageBlob);
+                        resultContainer.style.display = 'block';
+                        
+                        // Complete progress
+                        progressBar.style.width = '100%';
+                        progressText.textContent = 'Generation complete!';
+                        
+                        // Scroll to result
+                        setTimeout(() => {
+                            resultContainer.scrollIntoView({ behavior: 'smooth' });
+                        }, 300);
+                        
+                        showToast('Image generated successfully!', 'success');
+                    } else {
+                        throw new Error('No image generated');
+                    }
+                } catch (error) {
+                    console.error('Error fetching image:', error);
+                    showToast('Failed to download generated image', 'error');
+                } finally {
+                    resetGenerationState();
+                }
+            }
+
+            // Reset generation state
+            function resetGenerationState() {
+                generateBtn.disabled = false;
+                loadingState.style.display = 'none';
+                imageJobId = null;
+                if (imageCheckInterval) clearInterval(imageCheckInterval);
+            }
+
+            // Download image
+            downloadBtn.addEventListener('click', function() {
+                if (!generatedImageBlob) {
+                    showToast('No image to download', 'error');
+                    return;
+                }
+
+                const prompt = document.getElementById('image-prompt').value.trim().substring(0, 30);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `ai-image-${prompt || 'creation'}-${timestamp}.png`;
+                
+                const url = URL.createObjectURL(generatedImageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                
+                showToast('Download started!', 'success');
+            });
+
+            // Delete current image
+            deleteBtn.addEventListener('click', function() {
+                if (!generatedImageBlob) {
+                    showToast('No image to delete', 'error');
+                    return;
+                }
+                
+                generatedImageBlob = null;
+                resultImage.src = '';
+                resultContainer.style.display = 'none';
+                showToast('Image removed', 'success');
+            });
+        });
+    </script>
+</body>
+</html>

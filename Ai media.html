@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Media Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f5f7fa;
+            --text: #2d3748;
+            --text-light: #718096;
+            --accent: #10b981;
+            --pro: #f59e0b;
+            --new: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--text);
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: clamp(28px, 5vw, 32px);
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: clamp(14px, 3vw, 16px);
+            color: var(--text-light);
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            position: relative;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .container-title {
+            font-size: clamp(18px, 4vw, 20px);
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .container-title i {
+            margin-right: 12px;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: auto;
+            min-height: 180px;
+            max-height: 250px;
+            border-radius: 16px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover .preview-image {
+            transform: scale(1.02);
+        }
+
+        .description {
+            font-size: clamp(14px, 3vw, 15px);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #7c3aed);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: var(--text);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-new {
+            background-color: #d1fae5;
+            color: var(--new);
+        }
+
+        .badge-pro {
+            background-color: #fef3c7;
+            color: var(--pro);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: #f1f5f9;
+            color: var(--text-light);
+        }
+
+        /* Animation for buttons */
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 600ms linear;
+            pointer-events: none;
+        }
+
+        /* Tablet and larger mobile adjustments */
+        @media (min-width: 481px) and (max-width: 1024px) {
+            body {
+                padding: 30px;
+            }
+            
+            .container {
+                max-width: 600px;
+                padding: 30px;
+            }
+            
+            .preview-image {
+                min-height: 220px;
+                max-height: 300px;
+            }
+            
+            .header h1 {
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Small mobile adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 20px;
+                border-radius: 16px;
+            }
+            
+            .container-title i {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 15px;
+                border-radius: 12px;
+            }
+            
+            .tag {
+                font-size: 11px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AI Media Studio</h1>
+        <p>Create stunning visuals with artificial intelligence</p>
+    </div>
+
+    <!-- AI Image Generator Container -->
+    <div class="container">
+        <div class="container-title">
+            <i class="fas fa-magic"></i>
+            <span>AI Image Generator</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+        <div class="tag-container">
+            <span class="tag">Text-to-Image</span>
+            <span class="tag">AI Art</span>
+        </div>
+        <img src="assests/im-gn.png" alt="AI Generated Image" class="preview-image">
+        <p class="description">
+            Transform your ideas into stunning visuals with our advanced AI image generator. Just describe what you imagine, and our AI will create it for you in seconds.
+        </p>
+        <a href="ai-image-generator.html" class="btn btn-primary" id="imageGeneratorBtn">
+            Generate Images Now
+        </a>
+    </div>
+
+    <!-- AI Image Enhancer Container -->
+    <div class="container">
+        <div class="container-title">
+            <i class="fas fa-expand"></i>
+            <span>AI Image Enhancer</span>
+            <span class="badge badge-pro">PRO</span>
+        </div>
+        <div class="tag-container">
+            <span class="tag">Upscale</span>
+            <span class="tag">Restore</span>
+            <span class="tag">Enhance</span>
+        </div>
+        <img src="assests/im en.png" alt="AI Enhanced Image" class="preview-image">
+        <p class="description">
+            Upgrade your photos to professional quality. Our AI enhances resolution, fixes blur, adjusts colors, and removes imperfections automatically.
+        </p>
+        <a href="ai-image-enhancer.html" class="btn btn-primary" id="imageEnhancerBtn">
+            Enhance Your Images
+        </a>
+    </div>
+
+    <!-- AI Image to Video Generator Container -->
+    <div class="container">
+        <div class="container-title">
+            <i class="fas fa-film"></i>
+            <span>AI Image to Video Generator</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+        <div class="tag-container">
+            <span class="tag">Animation</span>
+            <span class="tag">Motion</span>
+            <span class="tag">4K</span>
+        </div>
+        <img src="https://images.unsplash.com/photo-1682695797221-8164ff1fafc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="AI Generated Video" class="preview-image">
+        <p class="description">
+            Bring your static images to life! Our AI transforms your photos into dynamic videos with realistic motion, effects, and transitions.
+        </p>
+        <a href="https://hailuoai.video/create" target="_blank" class="btn btn-primary" id="videoGeneratorBtn">
+            Animate Your Images
+        </a>
+    </div>
+
+    <div class="footer">
+        <p>© 2023 AI Media Studio. All rights reserved.</p>
+    </div>
+
+    <script>
+        // Ripple effect for buttons
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+            circle.classList.add("ripple");
+            
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+            
+            button.appendChild(circle);
+        }
+        
+        document.getElementById("imageGeneratorBtn").addEventListener("click", createRipple);
+        document.getElementById("imageEnhancerBtn").addEventListener("click", createRipple);
+        document.getElementById("videoGeneratorBtn").addEventListener("click", createRipple);
+        
+        // Button press animation
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
