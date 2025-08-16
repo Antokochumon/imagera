@@ -377,16 +377,17 @@
     </script>
 
 
+
+
+
+
 <script>
 const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
 
 // Function to open ad page with timer
 function openAdWithTimer(originalLink, displayTime = 5000) {
-    // Save original link and timer to localStorage
     localStorage.setItem('returnUrl', originalLink);
     localStorage.setItem('adTimer', Date.now() + displayTime);
-
-    // Go to ad page
     window.location.href = adLink;
 }
 
@@ -418,23 +419,24 @@ function handleAdTimer() {
     });
 }
 
-// Attach to all buttons
+// Attach to AI Generator button
 document.getElementById("imageGeneratorBtn").addEventListener("click", function(e) {
     e.preventDefault();
     createRipple(e);
     openAdWithTimer('ai-image-generator.html', 5000);
 });
 
+// Attach to AI Enhancer button
 document.getElementById("imageEnhancerBtn").addEventListener("click", function(e) {
     e.preventDefault();
     createRipple(e);
     openAdWithTimer('ai-image-enhancer.html', 5000);
 });
 
+// Attach to Video Generator button (direct link)
 document.getElementById("videoGeneratorBtn").addEventListener("click", function(e) {
-    e.preventDefault();
     createRipple(e);
-    window.open(this.href, "_blank"); // Video page opens externally, no ad
+    window.open(this.href, "_blank"); // Directly open video generator link
 });
 
 // Ripple effect
@@ -463,8 +465,9 @@ document.querySelectorAll('.btn').forEach(button => {
 });
 </script>
 
-    
 
+
+    
 
 
     
@@ -485,6 +488,7 @@ document.querySelectorAll('.btn').forEach(button => {
 </body>
 
 </html>
+
 
 
 
