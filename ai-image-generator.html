@@ -756,6 +756,16 @@
         });
     </script>
 
+<script>
+// Detect when user tries to go back
+window.addEventListener("popstate", function(event) {
+    // Redirect to Ai media.html when back button is pressed
+    window.location.href = "Ai media.html";
+});
+
+// Push a dummy state so popstate works
+history.pushState({}, "");
+</script>
 
 
 <div style="text-align:center; margin: 30px 0;">
@@ -775,3 +785,4 @@
 </body>
 
 </html>
+
