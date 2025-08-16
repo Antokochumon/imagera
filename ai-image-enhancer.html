@@ -1400,18 +1400,63 @@
         }
         
         // Download result
+
+
+        
         function downloadResult() {
-            if (!currentFile.processedUrl) return;
-            
-            const a = document.createElement('a');
-            a.href = currentFile.processedUrl;
-            a.download = `enhanced_${currentFile.name}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showToast('Download started', 'success');
-        }
+    if (!currentFile.processedUrl) return;
+
+    // Check if the File System Access API is supported (Chrome, Edge, Android WebView)
+    if ('showSaveFilePicker' in window) {
+        saveWithFileSystemAPI();
+    } 
+    // Fallback for browsers that don't support File System API (Safari, Firefox, older browsers)
+    else {
+        fallbackDownload();
+    }
+}
+
+// Modern browsers (Chrome, Edge, Android WebView)
+async function saveWithFileSystemAPI() {
+    try {
+        // Fetch the image as a blob
+        const response = await fetch(currentFile.processedUrl);
+        const blob = await response.blob();
+
+        // Request file save access
+        const fileHandle = await window.showSaveFilePicker({
+            suggestedName: `enhanced_${currentFile.name}`,
+            types: [{
+                description: 'Images',
+                accept: { 'image/*': ['.png', '.jpg', '.jpeg'] },
+            }],
+        });
+
+        // Write the file
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+
+        showToast('Image saved to device!', 'success');
+    } catch (err) {
+        console.error("File System API error:", err);
+        fallbackDownload(); // Fallback if user cancels or API fails
+    }
+}
+
+// Fallback for browsers without File System API
+function fallbackDownload() {
+    const a = document.createElement('a');
+    a.href = currentFile.processedUrl;
+    a.download = `enhanced_${currentFile.name}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('Download started!', 'success');
+}
+
+
+        
         
         // Save to history
         function saveToHistory() {
@@ -1587,4 +1632,5 @@
 
     
 </html>
+
 
