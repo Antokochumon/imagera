@@ -379,31 +379,65 @@
 
 <script>
 const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
-const homeLink = "Ai media.html"; // AI Media Studio main page
 
-// Function to open ad then navigate to original page
-function openAdThenNavigate(event) {
-    event.preventDefault(); // Stop default <a> navigation
-    const originalLink = this.href; // Generator, Enhancer, or Video page
+// Function to open ad page with timer
+function openAdWithTimer(originalLink, displayTime = 5000) {
+    // Save original link and timer to localStorage
+    localStorage.setItem('returnUrl', originalLink);
+    localStorage.setItem('adTimer', Date.now() + displayTime);
 
-    // Insert home page into history first
-    history.replaceState(null, '', homeLink);
-
-    // Open ad page
+    // Go to ad page
     window.location.href = adLink;
+}
 
-    // After ad, user goes to the original page
-    setTimeout(() => {
-        history.pushState(null, '', originalLink);
-    }, 100);
+// On ad page, call this to handle auto-return
+function handleAdTimer() {
+    const returnUrl = localStorage.getItem('returnUrl');
+    const adTimer = localStorage.getItem('adTimer');
+
+    if (!returnUrl || !adTimer) return;
+
+    const remaining = adTimer - Date.now();
+
+    if (remaining > 0) {
+        setTimeout(() => {
+            window.location.href = returnUrl;
+            localStorage.removeItem('returnUrl');
+            localStorage.removeItem('adTimer');
+        }, remaining);
+    } else {
+        window.location.href = returnUrl;
+        localStorage.removeItem('returnUrl');
+        localStorage.removeItem('adTimer');
+    }
+
+    // Disable back button
+    history.pushState(null, '', location.href);
+    window.addEventListener('popstate', () => {
+        history.pushState(null, '', location.href);
+    });
 }
 
 // Attach to all buttons
-document.getElementById("imageGeneratorBtn").addEventListener("click", openAdThenNavigate);
-document.getElementById("imageEnhancerBtn").addEventListener("click", openAdThenNavigate);
-document.getElementById("videoGeneratorBtn").addEventListener("click", openAdThenNavigate);
+document.getElementById("imageGeneratorBtn").addEventListener("click", function(e) {
+    e.preventDefault();
+    createRipple(e);
+    openAdWithTimer('ai-image-generator.html', 5000);
+});
 
-// Ripple effect for buttons
+document.getElementById("imageEnhancerBtn").addEventListener("click", function(e) {
+    e.preventDefault();
+    createRipple(e);
+    openAdWithTimer('ai-image-enhancer.html', 5000);
+});
+
+document.getElementById("videoGeneratorBtn").addEventListener("click", function(e) {
+    e.preventDefault();
+    createRipple(e);
+    window.open(this.href, "_blank"); // Video page opens externally, no ad
+});
+
+// Ripple effect
 function createRipple(event) {
     const button = event.currentTarget;
     const circle = document.createElement("span");
@@ -421,16 +455,13 @@ function createRipple(event) {
     button.appendChild(circle);
 }
 
-// Attach ripple and press animations
+// Press animation
 document.querySelectorAll('.btn').forEach(button => {
-    button.addEventListener('click', createRipple);
-
-    button.addEventListener('mousedown', () => { button.style.transform = 'scale(0.98)'; });
-    button.addEventListener('mouseup', () => { button.style.transform = 'scale(1)'; });
-    button.addEventListener('mouseleave', () => { button.style.transform = 'scale(1)'; });
+    button.addEventListener('mousedown', () => button.style.transform = 'scale(0.98)');
+    button.addEventListener('mouseup', () => button.style.transform = 'scale(1)');
+    button.addEventListener('mouseleave', () => button.style.transform = 'scale(1)');
 });
 </script>
-
 
     
 
@@ -454,6 +485,7 @@ document.querySelectorAll('.btn').forEach(button => {
 </body>
 
 </html>
+
 
 
 
