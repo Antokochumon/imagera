@@ -380,66 +380,95 @@
 
 
 
-
 <script>
-const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
+// Ad configuration
+const adConfig = {
+    adLink: "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9",
+    adDuration: 6000, // 6 seconds
+    localStorageKey: 'pendingRedirect'
+};
 
-// Function to open ad page with timer
-function openAdWithTimer(originalLink, displayTime = 5000) {
-    localStorage.setItem('returnUrl', originalLink);
-    localStorage.setItem('adTimer', Date.now() + displayTime);
-    window.location.href = adLink;
+// Function to handle button clicks
+function handleGenerateClick(event, destination) {
+    event.preventDefault();
+    createRipple(event);
+    
+    // Store destination URL with timestamp
+    const redirectData = {
+        url: destination,
+        expires: Date.now() + adConfig.adDuration
+    };
+    localStorage.setItem(adConfig.localStorageKey, JSON.stringify(redirectData));
+    
+    // Redirect to ad page
+    window.location.href = adConfig.adLink;
 }
 
-// On ad page, call this to handle auto-return
-function handleAdTimer() {
-    const returnUrl = localStorage.getItem('returnUrl');
-    const adTimer = localStorage.getItem('adTimer');
-
-    if (!returnUrl || !adTimer) return;
-
-    const remaining = adTimer - Date.now();
-
-    if (remaining > 0) {
-        setTimeout(() => {
-            window.location.href = returnUrl;
-            localStorage.removeItem('returnUrl');
-            localStorage.removeItem('adTimer');
-        }, remaining);
-    } else {
-        window.location.href = returnUrl;
-        localStorage.removeItem('returnUrl');
-        localStorage.removeItem('adTimer');
-    }
-
-    // Disable back button
-    history.pushState(null, '', location.href);
+// Function to process redirects (call this on ad page)
+function processAdRedirect() {
+    const storedData = localStorage.getItem(adConfig.localStorageKey);
+    if (!storedData) return;
+    
+    const { url, expires } = JSON.parse(storedData);
+    const now = Date.now();
+    
+    // Add countdown display
+    const countdownEl = document.createElement('div');
+    countdownEl.style.position = 'fixed';
+    countdownEl.style.bottom = '20px';
+    countdownEl.style.right = '20px';
+    countdownEl.style.padding = '10px';
+    countdownEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    countdownEl.style.color = 'white';
+    countdownEl.style.borderRadius = '5px';
+    countdownEl.style.zIndex = '9999';
+    document.body.appendChild(countdownEl);
+    
+    // Update countdown
+    const updateCountdown = () => {
+        const secondsLeft = Math.ceil((expires - Date.now()) / 1000);
+        countdownEl.textContent = `Redirecting in ${secondsLeft} seconds...`;
+    };
+    
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    
+    // Set up redirect
+    const redirectTimeout = setTimeout(() => {
+        clearInterval(timer);
+        localStorage.removeItem(adConfig.localStorageKey);
+        window.location.href = url;
+    }, expires - now);
+    
+    // Handle back button
+    history.pushState(null, null, window.location.href);
     window.addEventListener('popstate', () => {
-        history.pushState(null, '', location.href);
+        clearTimeout(redirectTimeout);
+        clearInterval(timer);
+        localStorage.removeItem(adConfig.localStorageKey);
+        window.location.href = url;
     });
 }
 
-// Attach to AI Generator button
-document.getElementById("imageGeneratorBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    createRipple(e);
-    openAdWithTimer('ai-image-generator.html', 5000);
+// Attach event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Image Generator Button
+    document.getElementById("imageGeneratorBtn").addEventListener("click", function(e) {
+        handleGenerateClick(e, 'ai-image-generator.html');
+    });
+    
+    // Image Enhancer Button
+    document.getElementById("imageEnhancerBtn").addEventListener("click", function(e) {
+        handleGenerateClick(e, 'ai-image-enhancer.html');
+    });
+    
+    // Check if we're on the ad page
+    if (window.location.href.includes(adConfig.adLink)) {
+        processAdRedirect();
+    }
 });
 
-// Attach to AI Enhancer button
-document.getElementById("imageEnhancerBtn").addEventListener("click", function(e) {
-    e.preventDefault();
-    createRipple(e);
-    openAdWithTimer('ai-image-enhancer.html', 5000);
-});
-
-// Attach to Video Generator button (direct link)
-document.getElementById("videoGeneratorBtn").addEventListener("click", function(e) {
-    createRipple(e);
-    window.open(this.href, "_blank"); // Directly open video generator link
-});
-
-// Ripple effect
+// Your existing ripple effect function
 function createRipple(event) {
     const button = event.currentTarget;
     const circle = document.createElement("span");
@@ -456,18 +485,7 @@ function createRipple(event) {
 
     button.appendChild(circle);
 }
-
-// Press animation
-document.querySelectorAll('.btn').forEach(button => {
-    button.addEventListener('mousedown', () => button.style.transform = 'scale(0.98)');
-    button.addEventListener('mouseup', () => button.style.transform = 'scale(1)');
-    button.addEventListener('mouseleave', () => button.style.transform = 'scale(1)');
-});
 </script>
-
-
-
-    
 
 
     
@@ -488,6 +506,7 @@ document.querySelectorAll('.btn').forEach(button => {
 </body>
 
 </html>
+
 
 
 
