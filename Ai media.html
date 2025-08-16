@@ -379,96 +379,33 @@
 
 
 
-
 <script>
-// Ad configuration
-const adConfig = {
-    adLink: "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9",
-    adDuration: 6000, // 6 seconds
-    localStorageKey: 'pendingRedirect'
-};
+const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
+const homeLink = "Ai media.html"; // AI Media Studio main page
 
-// Function to handle button clicks
-function handleGenerateClick(event, destination) {
-    event.preventDefault();
-    createRipple(event);
-    
-    // Store destination URL with timestamp
-    const redirectData = {
-        url: destination,
-        expires: Date.now() + adConfig.adDuration
-    };
-    localStorage.setItem(adConfig.localStorageKey, JSON.stringify(redirectData));
-    
-    // Redirect to ad page
-    window.location.href = adConfig.adLink;
+// Function to open ad then navigate to original page
+function openAdThenNavigate(event) {
+    event.preventDefault(); // Stop default <a> navigation
+    const originalLink = this.href; // Generator, Enhancer, or Video page
+
+    // Insert home page into history first
+    history.replaceState(null, '', homeLink);
+
+    // Open ad page
+    window.location.href = adLink;
+
+    // After ad, user goes to the original page
+    setTimeout(() => {
+        history.pushState(null, '', originalLink);
+    }, 100);
 }
 
-// Function to process redirects (call this on ad page)
-function processAdRedirect() {
-    const storedData = localStorage.getItem(adConfig.localStorageKey);
-    if (!storedData) return;
-    
-    const { url, expires } = JSON.parse(storedData);
-    const now = Date.now();
-    
-    // Add countdown display
-    const countdownEl = document.createElement('div');
-    countdownEl.style.position = 'fixed';
-    countdownEl.style.bottom = '20px';
-    countdownEl.style.right = '20px';
-    countdownEl.style.padding = '10px';
-    countdownEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
-    countdownEl.style.color = 'white';
-    countdownEl.style.borderRadius = '5px';
-    countdownEl.style.zIndex = '9999';
-    document.body.appendChild(countdownEl);
-    
-    // Update countdown
-    const updateCountdown = () => {
-        const secondsLeft = Math.ceil((expires - Date.now()) / 1000);
-        countdownEl.textContent = `Redirecting in ${secondsLeft} seconds...`;
-    };
-    
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    
-    // Set up redirect
-    const redirectTimeout = setTimeout(() => {
-        clearInterval(timer);
-        localStorage.removeItem(adConfig.localStorageKey);
-        window.location.href = url;
-    }, expires - now);
-    
-    // Handle back button
-    history.pushState(null, null, window.location.href);
-    window.addEventListener('popstate', () => {
-        clearTimeout(redirectTimeout);
-        clearInterval(timer);
-        localStorage.removeItem(adConfig.localStorageKey);
-        window.location.href = url;
-    });
-}
+// Attach to all buttons
+document.getElementById("imageGeneratorBtn").addEventListener("click", openAdThenNavigate);
+document.getElementById("imageEnhancerBtn").addEventListener("click", openAdThenNavigate);
+document.getElementById("videoGeneratorBtn").addEventListener("click", openAdThenNavigate);
 
-// Attach event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Image Generator Button
-    document.getElementById("imageGeneratorBtn").addEventListener("click", function(e) {
-        handleGenerateClick(e, 'ai-image-generator.html');
-    });
-    
-    // Image Enhancer Button
-    document.getElementById("imageEnhancerBtn").addEventListener("click", function(e) {
-        handleGenerateClick(e, 'ai-image-enhancer.html');
-    });
-    
-    // Check if we're on the ad page
-    if (window.location.href.includes(adConfig.adLink)) {
-        processAdRedirect();
-    }
-});
-
-// Your existing ripple effect function
+// Ripple effect for buttons
 function createRipple(event) {
     const button = event.currentTarget;
     const circle = document.createElement("span");
@@ -485,8 +422,16 @@ function createRipple(event) {
 
     button.appendChild(circle);
 }
-</script>
 
+// Attach ripple and press animations
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', createRipple);
+
+    button.addEventListener('mousedown', () => { button.style.transform = 'scale(0.98)'; });
+    button.addEventListener('mouseup', () => { button.style.transform = 'scale(1)'; });
+    button.addEventListener('mouseleave', () => { button.style.transform = 'scale(1)'; });
+});
+</script>
 
     
 <div style="text-align:center; margin: 30px 0;">
@@ -506,6 +451,7 @@ function createRipple(event) {
 </body>
 
 </html>
+
 
 
 
