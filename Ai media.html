@@ -379,28 +379,31 @@
 
 <script>
 const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
+const homeLink = "Ai media.html"; // AI Media Studio main page
 
-// Generic function for all buttons
+// Function to open ad then navigate to original page
 function openAdThenNavigate(event) {
     event.preventDefault(); // Stop default <a> navigation
+    const originalLink = this.href; // Generator, Enhancer, or Video page
 
-    const originalLink = this.href; // Store original href
+    // Insert home page into history first
+    history.replaceState(null, '', homeLink);
 
-    // Open ad page first
+    // Open ad page
     window.location.href = adLink;
 
-    // Add original page to history so back button returns there
+    // After ad, user goes to the original page
     setTimeout(() => {
         history.pushState(null, '', originalLink);
-    }, 100); // slight delay ensures ad page loads first
+    }, 100);
 }
 
-// Attach to buttons
+// Attach to all buttons
 document.getElementById("imageGeneratorBtn").addEventListener("click", openAdThenNavigate);
 document.getElementById("imageEnhancerBtn").addEventListener("click", openAdThenNavigate);
+document.getElementById("videoGeneratorBtn").addEventListener("click", openAdThenNavigate);
 
-
-// Ripple effect for all buttons
+// Ripple effect for buttons
 function createRipple(event) {
     const button = event.currentTarget;
     const circle = document.createElement("span");
@@ -418,16 +421,15 @@ function createRipple(event) {
     button.appendChild(circle);
 }
 
+// Attach ripple and press animations
 document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', createRipple);
 
-    // Button press animation
     button.addEventListener('mousedown', () => { button.style.transform = 'scale(0.98)'; });
     button.addEventListener('mouseup', () => { button.style.transform = 'scale(1)'; });
     button.addEventListener('mouseleave', () => { button.style.transform = 'scale(1)'; });
 });
 </script>
-
 
 
     
@@ -452,6 +454,7 @@ document.querySelectorAll('.btn').forEach(button => {
 </body>
 
 </html>
+
 
 
 
