@@ -371,36 +371,20 @@
 
 
 <script>
-const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
+    const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
 
-function showAdWithCountdown() {
-    // Open the ad in a new tab
-    const adWindow = window.open(adLink, "_blank");
+    function openAd() {
+        // Navigate current page to ad inside WebViewer
+        window.location.href = adLink;
+    }
 
-    // Show countdown message
-    document.getElementById("adMessage").style.display = "block";
-    let seconds = 5;
-    document.getElementById("countdown").textContent = seconds;
+    // Attach click events to both buttons
+    document.getElementById("imageEnhancerBtn").addEventListener("click", openAd);
+    document.getElementById("imageGeneratorBtn").addEventListener("click", openAd);
+  </script>
 
-    const timer = setInterval(() => {
-        seconds--;
-        document.getElementById("countdown").textContent = seconds;
-        if (seconds <= 0) {
-            clearInterval(timer);
-            document.getElementById("adMessage").style.display = "none";
-            if (adWindow && !adWindow.closed) {
-                adWindow.close();
-            }
-        }
-    }, 1000);
-}
 
-// Attach click events to both buttons
-document.getElementById("imageEnhancerBtn").addEventListener("click", showAdWithCountdown);
-
-document.getElementById("imageGeneratorBtn").addEventListener("click", showAdWithCountdown);
-</script>
-
+    
 <div style="text-align:center; margin: 30px 0;">
     <script type="text/javascript">
         atOptions = {
@@ -418,5 +402,6 @@ document.getElementById("imageGeneratorBtn").addEventListener("click", showAdWit
 </body>
 
 </html>
+
 
 
