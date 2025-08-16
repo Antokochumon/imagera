@@ -339,10 +339,48 @@
                 gap: 10px;
             }
         }
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.back-button:hover {
+    background-color: var(--primary-light);
+    transform: translateX(-3px);
+}
+
+@media (max-width: 768px) {
+    .back-button {
+        top: 15px;
+        left: 15px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+        
     </style>
 </head>
 <body>
     <div class="container">
+          <button id="back-button" class="back-button" onclick="window.location.href='Ai media.html'">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+        
         <header>
             <div class="logo">
                 <i class="fas fa-magic"></i> AI Image Generator
@@ -794,5 +832,6 @@ document.getElementById("back-button").addEventListener("click", function() {
 </body>
 
 </html>
+
 
 
