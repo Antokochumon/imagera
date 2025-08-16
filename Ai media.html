@@ -331,16 +331,6 @@
 
 
 
-<script>
-const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
-
-function openAd() {
-    window.location.href = adLink; // Navigate current page
-}
-
-document.getElementById("imageEnhancerBtn").addEventListener("click", openAd);
-document.getElementById("imageGeneratorBtn").addEventListener("click", openAd);
-</script>
 
 
 
@@ -387,7 +377,60 @@ document.getElementById("imageGeneratorBtn").addEventListener("click", openAd);
     </script>
 
 
+<script>
+const adLink = "https://gaspcommercehermione.com/aenm9i4ut?key=013762987f6274c5800609ab5b55c0e9";
 
+// Generic function for all buttons
+function openAdThenNavigate(event) {
+    event.preventDefault(); // Stop default <a> navigation
+
+    const originalLink = this.href; // Store original href
+
+    // Open ad page first
+    window.location.href = adLink;
+
+    // Add original page to history so back button returns there
+    setTimeout(() => {
+        history.pushState(null, '', originalLink);
+    }, 100); // slight delay ensures ad page loads first
+}
+
+// Attach to buttons
+document.getElementById("imageGeneratorBtn").addEventListener("click", openAdThenNavigate);
+document.getElementById("imageEnhancerBtn").addEventListener("click", openAdThenNavigate);
+
+
+// Ripple effect for all buttons
+function createRipple(event) {
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+    circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+    circle.classList.add("ripple");
+
+    const ripple = button.getElementsByClassName("ripple")[0];
+    if (ripple) ripple.remove();
+
+    button.appendChild(circle);
+}
+
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', createRipple);
+
+    // Button press animation
+    button.addEventListener('mousedown', () => { button.style.transform = 'scale(0.98)'; });
+    button.addEventListener('mouseup', () => { button.style.transform = 'scale(1)'; });
+    button.addEventListener('mouseleave', () => { button.style.transform = 'scale(1)'; });
+});
+</script>
+
+
+
+    
 
 
 
@@ -409,6 +452,7 @@ document.getElementById("imageGeneratorBtn").addEventListener("click", openAd);
 </body>
 
 </html>
+
 
 
 
