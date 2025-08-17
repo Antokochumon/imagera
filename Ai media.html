@@ -254,6 +254,22 @@
                 font-size: 11px;
             }
         }
+
+
+  .ad-container {
+    max-width: 90%;   /* force width */
+    height: 20px;       /* force height */
+    margin: 10px auto;  /* center */
+    overflow: hidden;   /* hide anything extra */
+  }
+  .ad-container iframe {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+
+
+		
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -434,23 +450,24 @@ document.querySelectorAll('.btn').forEach(button => {
 </script>
 
     
-<div style="text-align:center; margin: 30px 0;">
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
-		'format' : 'iframe',
-		'height' : 10,
-		'width' : 100,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
+<div class="ad-container">
+  <script type="text/javascript">
+    atOptions = {
+      'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
+      'format' : 'iframe',
+      'height' : 20,   // set your preferred height
+      'width'  : 300,  // set your preferred width
+      'params' : {}
+    };
+  </script>
+  <script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
 </div>
 
     
 </body>
 
 </html>
+
 
 
 
