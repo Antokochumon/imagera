@@ -256,17 +256,32 @@
         }
 
 
+
+
+  body, html {
+    margin: 0;
+    height: 100%;
+  }
+
+  .ad-wrapper {
+    display: flex;
+    justify-content: center; /* center horizontally */
+    align-items: center;     /* center vertically */
+    height: 100vh;           /* full screen */
+  }
+
   .ad-container {
-    max-width: 90%;   /* force width */
-    height: 100px;       /* force height */
-    margin: 30px 0;  /* center */
+    width: 90%;       /* take 90% of screen width */
+    height: 100px;    /* fixed height */
     overflow: hidden;
-	text-align:center;  
+    text-align: center;
   }
+
   .ad-container iframe {
-    width: 100% !important;
-    height: 100% !important;
+    width: 100% !important;   /* stretch iframe */
+    height: 100% !important;  /* fixed height */
   }
+
 
 
 
@@ -451,23 +466,26 @@ document.querySelectorAll('.btn').forEach(button => {
 </script>
 
     
-<div class="ad-container">
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
-		'format' : 'iframe',
-		'height' : 250,
-		'width' : 300,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
+<div class="ad-wrapper">
+  <div class="ad-container">
+    <script type="text/javascript">
+      atOptions = {
+        'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
+        'format' : 'iframe',
+        'height' : 100,   // force ad script height
+        'width'  : 728,   // script width (doesn’t matter, we override with CSS)
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
+  </div>
 </div>
 
     
 </body>
 
 </html>
+
 
 
 
