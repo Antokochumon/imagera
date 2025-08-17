@@ -257,33 +257,29 @@
 
 
 
-
-  body, html {
+body, html {
     margin: 0;
-    height: 100%;
+    padding: 0;
   }
 
   .ad-wrapper {
     display: flex;
     justify-content: center; /* center horizontally */
-    align-items: center;     /* center vertically */
-    height: 100vh;           /* full screen */
+    margin: 20px 0;          /* small top/bottom margin */
   }
 
   .ad-container {
-    width: 90%;       /* take 90% of screen width */
-    height: 100px;    /* fixed height */
+    width: 90%;      /* 90% of screen width */
+    max-width: 1000px; /* optional: don’t let it grow too large */
+    height: 100px;
     overflow: hidden;
     text-align: center;
   }
 
   .ad-container iframe {
-    width: 100% !important;   /* stretch iframe */
-    height: 100% !important;  /* fixed height */
+    width: 100% !important;
+    height: 100% !important;
   }
-
-
-
 
 		
     </style>
@@ -485,6 +481,7 @@ document.querySelectorAll('.btn').forEach(button => {
 </body>
 
 </html>
+
 
 
 
