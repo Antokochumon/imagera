@@ -197,7 +197,7 @@
 
         .action-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 15px;
             margin-top: 15px;
         }
@@ -259,7 +259,26 @@
             transition: opacity 0.3s;
         }
 
-        .gallery-item:hover .delete-btn {
+        .report-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--warning);
+            color: var(--dark);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover .delete-btn,
+        .gallery-item:hover .report-btn {
             opacity: 1;
         }
 
@@ -298,6 +317,138 @@
             background-color: var(--secondary);
         }
 
+        .toast.warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        /* Content Warning Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--error);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-cancel {
+            background-color: #f1f1f1;
+            color: var(--dark);
+            border: none;
+        }
+
+        .modal-btn-confirm {
+            background-color: var(--error);
+            color: white;
+            border: none;
+        }
+
+        /* Report Modal */
+        .report-modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .report-options {
+            margin: 20px 0;
+        }
+
+        .report-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .report-option:hover {
+            background-color: #f5f5f5;
+        }
+
+        .report-option input {
+            margin-right: 10px;
+        }
+
+        .report-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            resize: vertical;
+        }
+
+        /* Terms Modal */
+        .terms-modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+        }
+
+        .terms-content {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        .terms-content h3 {
+            margin: 15px 0 8px;
+            color: var(--primary);
+        }
+
+        .terms-content ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .container {
@@ -323,6 +474,10 @@
             .action-buttons {
                 grid-template-columns: 1fr;
             }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
         }
 
         @media (max-width: 480px) {
@@ -340,45 +495,68 @@
             }
         }
 
-.back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.3s;
-    z-index: 10;
-}
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
 
-.back-button:hover {
-    background-color: var(--primary-light);
-    transform: translateX(-3px);
-}
+        .back-button:hover {
+            background-color: var(--primary-light);
+            transform: translateX(-3px);
+        }
 
-@media (max-width: 768px) {
-    .back-button {
-        top: 15px;
-        left: 15px;
-        padding: 6px 12px;
-        font-size: 0.8rem;
-    }
-}
+        @media (max-width: 768px) {
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
 
-        
+        .terms-link {
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .warning-banner {
+            background-color: var(--warning);
+            color: var(--dark);
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-banner i {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
-      <button id="back-button" class="back-button" onclick="window.location.href='Ai media.html'">
+    <button id="back-button" class="back-button" onclick="window.location.href='Ai media.html'">
         <i class="fas fa-arrow-left"></i> Back
-        </button>      
+    </button>      
+    
     <div class="container">
         <header>
             <div class="logo">
@@ -389,6 +567,14 @@
             </div>
         </header>
 
+        <div class="warning-banner">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>Content Guidelines:</strong> This app prohibits the generation of explicit, violent, or harmful content. 
+                All images are automatically filtered and users can report inappropriate content.
+            </div>
+        </div>
+
         <div class="generator-card">
             <h2 class="card-title">
                 <i class="fas fa-paint-brush"></i> Create New Image
@@ -397,6 +583,7 @@
             <div class="input-group">
                 <label for="image-prompt">Describe your image</label>
                 <textarea id="image-prompt" placeholder="Example: A majestic lion standing on a rock at sunset, digital art style, highly detailed, vibrant colors"></textarea>
+                <small style="color: #666; display: block; margin-top: 5px;">Avoid descriptions of explicit, violent, or harmful content.</small>
             </div>
             
             <div class="input-group">
@@ -443,6 +630,9 @@
                     <button id="download-btn" class="btn btn-secondary">
                         <i class="fas fa-download"></i> Download
                     </button>
+                    <button id="save-btn" class="btn">
+                        <i class="fas fa-save"></i> Save
+                    </button>
                     <button id="delete-btn" class="btn" style="background-color: var(--error);">
                         <i class="fas fa-trash"></i> Delete
                     </button>
@@ -464,13 +654,102 @@
                 <p>Your generated images will appear here</p>
             </div>
         </div>
+
+        <div class="terms-link" id="show-terms">
+            <i class="fas fa-file-alt"></i> View Content Guidelines and Terms of Use
+        </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
+    <!-- Content Warning Modal -->
+    <div class="modal" id="warning-modal">
+        <div class="modal-content">
+            <h3 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Content Warning</h3>
+            <p>Your prompt may contain terms that could generate inappropriate content. Please revise your description to comply with our content guidelines.</p>
+            <p id="flagged-terms" style="font-weight: bold; color: var(--error); margin: 10px 0;"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="cancel-generate">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="confirm-generate">Generate Anyway</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Report Modal -->
+    <div class="modal" id="report-modal">
+        <div class="report-modal-content">
+            <h3 class="modal-title"><i class="fas fa-flag"></i> Report Content</h3>
+            <p>Please select the reason for reporting this image:</p>
+            
+            <div class="report-options">
+                <label class="report-option">
+                    <input type="radio" name="report-reason" value="explicit" checked> 
+                    Explicit/Sexual Content
+                </label>
+                <label class="report-option">
+                    <input type="radio" name="report-reason" value="violence"> 
+                    Violence/Harm
+                </label>
+                <label class="report-option">
+                    <input type="radio" name="report-reason" value="hate"> 
+                    Hate Speech/Symbols
+                </label>
+                <label class="report-option">
+                    <input type="radio" name="report-reason" value="other"> 
+                    Other (please specify)
+                </label>
+            </div>
+            
+            <textarea class="report-textarea" id="report-details" placeholder="Additional details (optional)"></textarea>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="cancel-report">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="submit-report">Submit Report</button>
+            </div>
+        </div>
+    </div>
 
-<div style="text-align:center; margin: 30px 0; height: 20px;">
+    <!-- Terms Modal -->
+    <div class="modal" id="terms-modal">
+        <div class="terms-modal-content">
+            <h3 class="modal-title"><i class="fas fa-file-alt"></i> Content Guidelines</h3>
+            
+            <div class="terms-content">
+                <h3>Prohibited Content</h3>
+                <p>This app does not allow the generation of the following content:</p>
+                <ul>
+                    <li>Sexually explicit or suggestive content</li>
+                    <li>Nudity or partially clothed figures in suggestive poses</li>
+                    <li>Violent, gory, or harmful imagery</li>
+                    <li>Hate speech, symbols, or discriminatory content</li>
+                    <li>Illegal activities or substances</li>
+                    <li>Copyrighted material you don't have rights to</li>
+                </ul>
+                
+                <h3>User Responsibilities</h3>
+                <ul>
+                    <li>You must not attempt to bypass content filters</li>
+                    <li>You must report any inappropriate content you encounter</li>
+                    <li>You are responsible for the prompts you submit</li>
+                </ul>
+                
+                <h3>Content Moderation</h3>
+                <p>All generated content is automatically filtered for policy violations. Users can report content that slips through these filters. Repeated violations may result in account suspension.</p>
+                
+                <h3>AI Limitations</h3>
+                <p>AI-generated content may sometimes produce unexpected results. Please use the reporting feature if you encounter inappropriate content.</p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" id="accept-terms">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    
+    <div style="text-align:center; margin: 30px 0; height: 20px;">
 <script type="text/javascript">
 	atOptions = {
 		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
@@ -482,10 +761,10 @@
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
 </div>
-
-
-	
-
+    
+    
+    
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // DOM Elements
@@ -494,6 +773,7 @@
             const resultContainer = document.getElementById('result-container');
             const resultImage = document.getElementById('result-image');
             const downloadBtn = document.getElementById('download-btn');
+            const saveBtn = document.getElementById('save-btn');
             const deleteBtn = document.getElementById('delete-btn');
             const progressBar = document.getElementById('progress-bar');
             const loadingText = document.getElementById('loading-text');
@@ -501,6 +781,16 @@
             const galleryGrid = document.getElementById('gallery-grid');
             const emptyGallery = document.getElementById('empty-gallery');
             const toast = document.getElementById('toast');
+            const warningModal = document.getElementById('warning-modal');
+            const flaggedTermsEl = document.getElementById('flagged-terms');
+            const cancelGenerateBtn = document.getElementById('cancel-generate');
+            const confirmGenerateBtn = document.getElementById('confirm-generate');
+            const reportModal = document.getElementById('report-modal');
+            const cancelReportBtn = document.getElementById('cancel-report');
+            const submitReportBtn = document.getElementById('submit-report');
+            const termsModal = document.getElementById('terms-modal');
+            const showTermsBtn = document.getElementById('show-terms');
+            const acceptTermsBtn = document.getElementById('accept-terms');
 
             // API Configuration
             const STABLE_HORDE_API_KEY = 'Bi-aq4T72lBfF4UJjsMzNg';
@@ -508,11 +798,20 @@
             const CHECK_STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/check/';
             const STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/status/';
 
+            // Prohibited terms list (simplified example - in production, use a more comprehensive list)
+            const PROHIBITED_TERMS = [
+                'nude', 'naked', 'sex', 'sexual', 'porn', 'pornography', 'explicit', 
+                'hentai', 'nsfw', 'fuck', 'ass', 'boobs', 'breasts', 'penis', 'vagina',
+                'rape', 'violent', 'gore', 'blood', 'kill', 'murder', 'hitler', 'nazi',
+                'racist', 'terrorist', 'child porn', 'cp', 'loli', 'shota'
+            ];
+
             // App State
             let generatedImageBlob = null;
             let imageJobId = null;
             let imageCheckInterval = null;
             let storedImages = JSON.parse(localStorage.getItem('aiGeneratedImages') || '[]');
+            let currentlyReportingIndex = null;
 
             // Show toast notification
             function showToast(message, type = '') {
@@ -523,6 +822,20 @@
                 setTimeout(() => {
                     toast.classList.remove('show');
                 }, 3000);
+            }
+
+            // Check prompt for prohibited terms
+            function checkPrompt(prompt) {
+                const lowerPrompt = prompt.toLowerCase();
+                const foundTerms = [];
+                
+                PROHIBITED_TERMS.forEach(term => {
+                    if (lowerPrompt.includes(term)) {
+                        foundTerms.push(term);
+                    }
+                });
+                
+                return foundTerms;
             }
 
             // Load gallery images
@@ -541,6 +854,9 @@
                     galleryItem.className = 'gallery-item';
                     galleryItem.innerHTML = `
                         <img src="${imgData.url}" alt="Generated image ${index}" class="gallery-img">
+                        <button class="report-btn" data-index="${index}">
+                            <i class="fas fa-flag"></i>
+                        </button>
                         <button class="delete-btn" data-index="${index}">
                             <i class="fas fa-times"></i>
                         </button>
@@ -557,7 +873,43 @@
                         e.stopPropagation();
                         deleteImageFromGallery(index);
                     });
+                    
+                    // Add report event
+                    galleryItem.querySelector('.report-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showReportModal(index);
+                    });
                 });
+            }
+
+            // Show report modal
+            function showReportModal(index) {
+                currentlyReportingIndex = index;
+                reportModal.style.display = 'flex';
+            }
+
+            // Submit report
+            function submitReport() {
+                if (currentlyReportingIndex === null || currentlyReportingIndex >= storedImages.length) return;
+                
+                const reportReason = document.querySelector('input[name="report-reason"]:checked').value;
+                const reportDetails = document.getElementById('report-details').value;
+                
+                // In a real app, you would send this to your backend
+                console.log('Report submitted:', {
+                    imageIndex: currentlyReportingIndex,
+                    reason: reportReason,
+                    details: reportDetails,
+                    imageData: storedImages[currentlyReportingIndex]
+                });
+                
+                showToast('Thank you for your report. We will review this content.', 'success');
+                reportModal.style.display = 'none';
+                currentlyReportingIndex = null;
+                
+                // Reset form
+                document.getElementById('report-details').value = '';
+                document.querySelector('input[name="report-reason"][value="explicit"]').checked = true;
             }
 
             // View image from gallery
@@ -618,6 +970,14 @@
                 const prompt = document.getElementById('image-prompt').value.trim();
                 if (!prompt) {
                     showToast('Please enter a description for your image', 'error');
+                    return;
+                }
+
+                // Check for prohibited terms
+                const flaggedTerms = checkPrompt(prompt);
+                if (flaggedTerms.length > 0) {
+                    flaggedTermsEl.textContent = `Flagged terms: ${flaggedTerms.join(', ')}`;
+                    warningModal.style.display = 'flex';
                     return;
                 }
 
@@ -796,6 +1156,18 @@
                 showToast('Download started!', 'success');
             });
 
+            // Save to gallery
+            saveBtn.addEventListener('click', function() {
+                if (!generatedImageBlob) {
+                    showToast('No image to save', 'error');
+                    return;
+                }
+                
+                const prompt = document.getElementById('image-prompt').value.trim();
+                storeImageLocally(generatedImageBlob, prompt);
+                showToast('Image saved to gallery!', 'success');
+            });
+
             // Delete current image
             deleteBtn.addEventListener('click', function() {
                 if (!generatedImageBlob) {
@@ -808,44 +1180,64 @@
                 resultContainer.style.display = 'none';
                 showToast('Image removed', 'success');
             });
+
+            // Modal handlers
+            cancelGenerateBtn.addEventListener('click', function() {
+                warningModal.style.display = 'none';
+                resetGenerationState();
+            });
+
+            confirmGenerateBtn.addEventListener('click', function() {
+                warningModal.style.display = 'none';
+                generateBtn.click(); // Trigger generation after warning
+            });
+
+            cancelReportBtn.addEventListener('click', function() {
+                reportModal.style.display = 'none';
+                currentlyReportingIndex = null;
+            });
+
+            submitReportBtn.addEventListener('click', submitReport);
+
+            showTermsBtn.addEventListener('click', function() {
+                termsModal.style.display = 'flex';
+            });
+
+            acceptTermsBtn.addEventListener('click', function() {
+                termsModal.style.display = 'none';
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === warningModal) {
+                    warningModal.style.display = 'none';
+                }
+                if (event.target === reportModal) {
+                    reportModal.style.display = 'none';
+                    currentlyReportingIndex = null;
+                }
+                if (event.target === termsModal) {
+                    termsModal.style.display = 'none';
+                }
+            });
+        });
+
+        // Detect mobile back button or browser back
+        window.addEventListener("pageshow", function (event) {
+            // Replace current page with Ai media.html if user tries to go back
+            history.replaceState(null, "", location.href);
+            history.pushState(null, "", location.href);
+        });
+
+        window.addEventListener("popstate", function (event) {
+            // Redirect to Ai media.html
+            window.location.href = "Ai media.html";
+        });
+
+        // Optional: also handle back button click in your navbar
+        document.getElementById("back-button").addEventListener("click", function() {
+            window.location.href = "Ai media.html";
         });
     </script>
-
-<script>
-// Detect mobile back button or browser back
-window.addEventListener("pageshow", function (event) {
-    // Replace current page with Ai media.html if user tries to go back
-    history.replaceState(null, "", location.href);
-    history.pushState(null, "", location.href);
-});
-
-window.addEventListener("popstate", function (event) {
-    // Redirect to Ai media.html
-    window.location.href = "Ai media.html";
-});
-
-// Optional: also handle back button click in your navbar
-document.getElementById("back-button").addEventListener("click", function() {
-    window.location.href = "Ai media.html";
-});
-</script>
-
-
-
-
-
-    
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
-
