@@ -208,6 +208,53 @@
             pointer-events: none;
         }
 
+        /* Ad Page Styles */
+        #adPage {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .ad-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--secondary);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        #backBtn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            color: var(--text);
+        }
+
+        .ad-header span {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .ad-container {
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .ad-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         /* Tablet and larger mobile adjustments */
         @media (min-width: 481px) and (max-width: 1024px) {
             body {
@@ -254,94 +301,133 @@
                 font-size: 11px;
             }
         }
-
-
-
-		
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="header">
-        <h1>AI Media Studio</h1>
-        <p>Create stunning visuals with artificial intelligence</p>
+    <!-- Main Content -->
+    <div id="mainContent">
+        <div class="header">
+            <h1>AI Media Studio</h1>
+            <p>Create stunning visuals with artificial intelligence</p>
+        </div>
+
+        <!-- AI Image Generator Container -->
+        <div class="container">
+            <div class="container-title">
+                <i class="fas fa-magic"></i>
+                <span>AI Image Generator</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+            <div class="tag-container">
+                <span class="tag">Text-to-Image</span>
+                <span class="tag">AI Art</span>
+            </div>
+            <img src="assests/im-gn.png" alt="AI Generated Image" class="preview-image">
+            <p class="description">
+                Transform your ideas into stunning visuals with our advanced AI image generator. Just describe what you imagine, and our AI will create it for you in seconds.
+            </p>
+            <a href="#" class="btn btn-primary" id="imageGeneratorBtn" data-target="ai-image-generator.html">
+                Generate Images Now
+            </a>
+        </div>
+
+        <!-- AI Image Enhancer Container -->
+        <div class="container">
+            <div class="container-title">
+                <i class="fas fa-expand"></i>
+                <span>AI Image Enhancer</span>
+                <span class="badge badge-pro">PRO</span>
+            </div>
+            <div class="tag-container">
+                <span class="tag">Upscale</span>
+                <span class="tag">Restore</span>
+                <span class="tag">Enhance</span>
+            </div>
+            <img src="assests/im en.png" alt="AI Enhanced Image" class="preview-image">
+            <p class="description">
+                Upgrade your photos to professional quality. Our AI enhances resolution, fixes blur, adjusts colors, and removes imperfections automatically.
+            </p>
+            <a href="#" class="btn btn-primary" id="imageEnhancerBtn" data-target="ai-image-enhancer.html">
+                Enhance Your Images
+            </a>
+        </div>
+
+        <!-- AI Image to Video Generator Container -->
+        <div class="container">
+            <div class="container-title">
+                <i class="fas fa-film"></i>
+                <span>AI Image to Video Generator</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+            <div class="tag-container">
+                <span class="tag">Animation</span>
+                <span class="tag">Motion</span>
+                <span class="tag">4K</span>
+            </div>
+            <img src="https://images.unsplash.com/photo-1682695797221-8164ff1fafc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="AI Generated Video" class="preview-image">
+            <p class="description">
+                Bring your static images to life! Our AI transforms your photos into dynamic videos with realistic motion, effects, and transitions.
+            </p>
+            <a href="#" class="btn btn-primary" id="videoGeneratorBtn" data-target="https://hailuoai.video/create">
+                Animate Your Images
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 AI Media Studio. All rights reserved.</p>
+        </div>
     </div>
 
-    <!-- AI Image Generator Container -->
-    <div class="container">
-        <div class="container-title">
-            <i class="fas fa-magic"></i>
-            <span>AI Image Generator</span>
-            <span class="badge badge-new">NEW</span>
+    <!-- Ad Page (initially hidden) -->
+    <div id="adPage">
+        <div class="ad-header">
+            <button id="backBtn">&larr; Back</button>
+            <span>Advertisement</span>
         </div>
-        <div class="tag-container">
-            <span class="tag">Text-to-Image</span>
-            <span class="tag">AI Art</span>
+        <div class="ad-container">
+            <iframe class="ad-iframe" src="https://www.profitableratecpm.com/yk0pswr3p?key=13f2577e7be225c99753de1ac4f4ace7"></iframe>
         </div>
-        <img src="assests/im-gn.png" alt="AI Generated Image" class="preview-image">
-        <p class="description">
-            Transform your ideas into stunning visuals with our advanced AI image generator. Just describe what you imagine, and our AI will create it for you in seconds.
-        </p>
-        <a href="ai-image-generator.html" class="btn btn-primary" id="imageGeneratorBtn">
-            Generate Images Now
-        </a>
     </div>
 
-    <!-- AI Image Enhancer Container -->
-    <div class="container">
-        <div class="container-title">
-            <i class="fas fa-expand"></i>
-            <span>AI Image Enhancer</span>
-            <span class="badge badge-pro">PRO</span>
-        </div>
-        <div class="tag-container">
-            <span class="tag">Upscale</span>
-            <span class="tag">Restore</span>
-            <span class="tag">Enhance</span>
-        </div>
-        <img src="assests/im en.png" alt="AI Enhanced Image" class="preview-image">
-        <p class="description">
-            Upgrade your photos to professional quality. Our AI enhances resolution, fixes blur, adjusts colors, and removes imperfections automatically.
-        </p>
-        <a href="ai-image-enhancer.html" class="btn btn-primary" id="imageEnhancerBtn">
-            Enhance Your Images
-        </a>
-    </div>
-
-    <!-- AI Image to Video Generator Container -->
-    <div class="container">
-        <div class="container-title">
-            <i class="fas fa-film"></i>
-            <span>AI Image to Video Generator</span>
-            <span class="badge badge-new">NEW</span>
-        </div>
-        <div class="tag-container">
-            <span class="tag">Animation</span>
-            <span class="tag">Motion</span>
-            <span class="tag">4K</span>
-        </div>
-        <img src="https://images.unsplash.com/photo-1682695797221-8164ff1fafc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="AI Generated Video" class="preview-image">
-        <p class="description">
-            Bring your static images to life! Our AI transforms your photos into dynamic videos with realistic motion, effects, and transitions.
-        </p>
-        <a href="https://hailuoai.video/create" target="_blank" class="btn btn-primary" id="videoGeneratorBtn">
-            Animate Your Images
-        </a>
-    </div>
-
-    <div class="footer">
-        <p>© 2025 AI Media Studio. All rights reserved.</p>
-    </div>
-
-
-
-
-
-
-
-
-    
     <script>
+        // Store the target page for navigation after ad
+        let targetPage = '';
+        
+        // Function to show ad page
+        function showAdPage(event, target) {
+            event.preventDefault();
+            targetPage = target;
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('adPage').style.display = 'flex';
+        }
+        
+        // Function to go back to the appropriate page
+        function goBack() {
+            document.getElementById('adPage').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            
+            // Navigate to the target page after ad
+            if (targetPage) {
+                window.location.href = targetPage;
+            }
+        }
+        
+        // Set up event listeners
+        document.getElementById('imageGeneratorBtn').addEventListener('click', function(e) {
+            showAdPage(e, this.getAttribute('data-target'));
+        });
+        
+        document.getElementById('imageEnhancerBtn').addEventListener('click', function(e) {
+            showAdPage(e, this.getAttribute('data-target'));
+        });
+        
+        document.getElementById('videoGeneratorBtn').addEventListener('click', function(e) {
+            showAdPage(e, this.getAttribute('data-target'));
+        });
+        
+        document.getElementById('backBtn').addEventListener('click', goBack);
+        
         // Ripple effect for buttons
         function createRipple(event) {
             const button = event.currentTarget;
@@ -362,10 +448,6 @@
             button.appendChild(circle);
         }
         
-        document.getElementById("imageGeneratorBtn").addEventListener("click", createRipple);
-        document.getElementById("imageEnhancerBtn").addEventListener("click", createRipple);
-   
-        
         // Button press animation
         document.querySelectorAll('.btn').forEach(button => {
             button.addEventListener('mousedown', () => {
@@ -379,66 +461,8 @@
             });
         });
     </script>
-
-
-
-
-<script>
-const adLink = "https://www.profitableratecpm.com/yk0pswr3p?key=13f2577e7be225c99753de1ac4f4ace7";
-const homeLink = "Ai media.html"; // AI Media Studio main page
-
-// Function to open ad then navigate to original page
-function openAdThenNavigate(event) {
-    event.preventDefault(); // Stop default <a> navigation
-    const originalLink = this.href; // Generator, Enhancer, or Video page
-
-    // Insert home page into history first
-    history.replaceState(null, '', homeLink);
-
-    // Open ad page
-    window.location.href = adLink;
-
-    // After ad, user goes to the original page
-    setTimeout(() => {
-        history.pushState(null, '', originalLink);
-    }, 100);
-}
-
-// Attach to all buttons
-document.getElementById("imageGeneratorBtn").addEventListener("click", openAdThenNavigate);
-document.getElementById("imageEnhancerBtn").addEventListener("click", openAdThenNavigate);
-
-
-// Ripple effect for buttons
-function createRipple(event) {
-    const button = event.currentTarget;
-    const circle = document.createElement("span");
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
-    circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
-    circle.classList.add("ripple");
-
-    const ripple = button.getElementsByClassName("ripple")[0];
-    if (ripple) ripple.remove();
-
-    button.appendChild(circle);
-}
-
-// Attach ripple and press animations
-document.querySelectorAll('.btn').forEach(button => {
-    button.addEventListener('click', createRipple);
-
-    button.addEventListener('mousedown', () => { button.style.transform = 'scale(0.98)'; });
-    button.addEventListener('mouseup', () => { button.style.transform = 'scale(1)'; });
-    button.addEventListener('mouseleave', () => { button.style.transform = 'scale(1)'; });
-});
-</script>
-
     
-<div style="text-align:center; margin: 30px 0; height: 20px;">
+    <div style="text-align:center; margin: 30px 0; height: 20px;">
 <script type="text/javascript">
 	atOptions = {
 		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
@@ -450,34 +474,6 @@ document.querySelectorAll('.btn').forEach(button => {
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
 </div>
-
-
     
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
