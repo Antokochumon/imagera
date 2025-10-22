@@ -302,6 +302,30 @@
                 font-size: 11px;
             }
         }
+
+
+.ad-banner {
+    width: 100%;
+    max-width: 320px; /* Banner native width */
+    margin: 20px auto; /* Center horizontally */
+    text-align: center;
+}
+
+.ad-banner img {
+    width: 100%;       /* Make it responsive */
+    height: auto;      /* Maintain aspect ratio */
+    border-radius: 8px; /* Optional: rounded corners */
+    display: inline-block;
+}
+@media (max-width: 480px) {
+    .ad-banner {
+        max-width: 100%; /* Full width on small devices */
+    }
+}
+
+
+
+		
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -391,11 +415,12 @@
         </div>
     </div>
 
-	<div>
-<!-- Start of banner code -->
-<a href="https://shrinkme.io/ref/Antokochumon"><img src="https://shrinkme.io/banners/ref/320x50.png" title="Make short links and earn the biggest money" /></a>
-<!-- End of banner code -->
-	</div>
+<div class="ad-banner">
+    <a href="https://shrinkme.io/ref/Antokochumon" target="_blank" rel="noopener noreferrer">
+        <img src="https://shrinkme.io/banners/ref/320x50.png" title="Make short links and earn the biggest money" alt="ShrinkMe Banner">
+    </a>
+</div>
+
 	
     <script>
         // Store the target page for navigation after ad
@@ -484,6 +509,7 @@
     
 </body>
 </html>
+
 
 
 
