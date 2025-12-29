@@ -303,29 +303,24 @@
             }
         }
 
+        .ad-banner {
+            width: 100%;
+            max-width: 320px;
+            margin: 20px auto;
+            text-align: center;
+        }
 
-.ad-banner {
-    width: 100%;
-    max-width: 320px; /* Banner native width */
-    margin: 20px auto; /* Center horizontally */
-    text-align: center;
-}
-
-.ad-banner img {
-    width: 100%;       /* Make it responsive */
-    height: auto;      /* Maintain aspect ratio */
-    border-radius: 8px; /* Optional: rounded corners */
-    display: inline-block;
-}
-@media (max-width: 480px) {
-    .ad-banner {
-        max-width: 100%; /* Full width on small devices */
-    }
-}
-
-
-
-		
+        .ad-banner img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        @media (max-width: 480px) {
+            .ad-banner {
+                max-width: 100%;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -378,6 +373,27 @@
             </a>
         </div>
 
+        <!-- AI Chatbot Container (NEW) -->
+        <div class="container">
+            <div class="container-title">
+                <i class="fas fa-comments"></i>
+                <span>AI Smart Chatbot</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+            <div class="tag-container">
+                <span class="tag">Assistant</span>
+                <span class="tag">Conversational</span>
+                <span class="tag">Smart</span>
+            </div>
+            <img src="https://images.unsplash.com/photo-1531746790731-6c087fecd05a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="AI Chatbot" class="preview-image">
+            <p class="description">
+                Chat with our intelligent AI assistant. Get answers to your questions, help with writing, or simply have a conversation with our most advanced model.
+            </p>
+            <a href="#" class="btn btn-primary" id="chatbotBtn" data-target="chatbot.html">
+                Chat With AI
+            </a>
+        </div>
+
         <!-- AI Image to Video Generator Container -->
         <div class="container">
             <div class="container-title">
@@ -415,18 +431,15 @@
         </div>
     </div>
 
-<div class="ad-banner">
-    <a href="https://shrinkme.io/ref/Antokochumon" target="_blank" rel="noopener noreferrer">
-        <img src="https://shrinkme.io/banners/ref/320x50.png" title="Make short links and earn the biggest money" alt="ShrinkMe Banner">
-    </a>
-</div>
+    <div class="ad-banner">
+        <a href="https://shrinkme.io/ref/Antokochumon" target="_blank" rel="noopener noreferrer">
+            <img src="https://shrinkme.io/banners/ref/320x50.png" title="Make short links and earn the biggest money" alt="ShrinkMe Banner">
+        </a>
+    </div>
 
-	
     <script>
-        // Store the target page for navigation after ad
         let targetPage = '';
         
-        // Function to show ad page
         function showAdPage(event, target) {
             event.preventDefault();
             targetPage = target;
@@ -434,23 +447,24 @@
             document.getElementById('adPage').style.display = 'flex';
         }
         
-        // Function to go back to the appropriate page
         function goBack() {
             document.getElementById('adPage').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             
-            // Navigate to the target page after ad
             if (targetPage) {
                 window.location.href = targetPage;
             }
         }
         
-        // Set up event listeners
         document.getElementById('imageGeneratorBtn').addEventListener('click', function(e) {
             showAdPage(e, this.getAttribute('data-target'));
         });
         
         document.getElementById('imageEnhancerBtn').addEventListener('click', function(e) {
+            showAdPage(e, this.getAttribute('data-target'));
+        });
+
+        document.getElementById('chatbotBtn').addEventListener('click', function(e) {
             showAdPage(e, this.getAttribute('data-target'));
         });
         
@@ -480,8 +494,8 @@
             button.appendChild(circle);
         }
         
-        // Button press animation
         document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', createRipple);
             button.addEventListener('mousedown', () => {
                 button.style.transform = 'scale(0.98)';
             });
@@ -495,21 +509,19 @@
     </script>
     
     <div style="text-align:center; margin: 30px 0; height: 20px;">
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
-		'format' : 'iframe',
-		'height' : 20,
-		'width' : 320,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
-</div>
-    
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
+                'format' : 'iframe',
+                'height' : 20,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
+    </div>
 </body>
 </html>
-
 
 
 
