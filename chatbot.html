@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flash Mobile AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --accent-color: #3b82f6;
+        }
+        body {
+            background-color: var(--bg-color);
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
+        }
+        .glass-header {
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .message-bubble {
+            position: relative;
+            max-width: 88%;
+            transition: transform 0.1s ease;
+        }
+        .message-bubble:active {
+            transform: scale(0.98);
+        }
+        .chat-container::-webkit-scrollbar {
+            display: none;
+        }
+        .chat-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: slideInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        
+        /* Mobile Keyboard Safe Area Padding */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+    </style>
+</head>
+<body class="text-zinc-100 h-screen flex flex-col font-sans overflow-hidden">
+
+    <!-- Mobile Header -->
+    <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight">Imagera</h1>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span id="status-text" class="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">Ready</span>
+                </div>
+            </div>
+        </div>
+        <button id="new-chat-btn" class="p-2 bg-white/5 rounded-full hover:bg-white/10 active:scale-90 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+        </button>
+    </header>
+
+    <!-- Chat Feed -->
+    <main id="chat-history" class="flex-1 overflow-y-auto p-5 space-y-6 chat-container">
+        <!-- Center Brand Hero -->
+        <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-full text-center space-y-6 animate-in">
+            <div class="w-20 h-20 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            </div>
+            <div>
+                <p class="text-2xl font-bold tracking-tight bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">Hello!</p>
+                <p class="text-zinc-500 text-sm px-8 mt-2">I'm your AI assistant, optimized for speed and efficiency.</p>
+            </div>
+            <div class="flex gap-2 w-full max-w-xs overflow-x-auto pb-2 px-4 no-scrollbar">
+                <button onclick="quickAsk('Explain Quantum Physics')" class="whitespace-nowrap bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">Explain Quantum</button>
+                <button onclick="quickAsk('Write a haiku')" class="whitespace-nowrap bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">Write a haiku</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Typing Loader -->
+    <div id="typing-indicator" class="hidden px-6 py-3 flex items-center gap-3">
+        <div class="flex gap-1.5">
+            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+        <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-600">Generating</span>
+    </div>
+
+    <!-- Mobile Navigation / Input -->
+    <footer class="p-4 safe-bottom bg-zinc-950/80 border-t border-zinc-900">
+        <form id="chat-form" class="relative flex items-center max-w-3xl mx-auto">
+            <input 
+                type="text" 
+                id="user-input" 
+                placeholder="How can I help you?..." 
+                class="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-5 pr-14 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all placeholder-zinc-600"
+                autocomplete="off"
+            >
+            <button 
+                type="submit" 
+                id="send-btn"
+                class="absolute right-2 p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+        </form>
+    </footer>
+
+    <script>
+        const API_KEY = "AIzaSyBlH05cilcCZfgNURw5voertamvD7bSWCE";
+        const MODEL = "gemini-2.5-flash-preview-09-2025";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+
+        const chatHistory = document.getElementById('chat-history');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const statusText = document.getElementById('status-text');
+        const newChatBtn = document.getElementById('new-chat-btn');
+
+        let conversation = [];
+
+        const scrollToBottom = () => {
+            chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+        };
+
+        const updateStatus = (text, colorClass) => {
+            statusText.innerText = text;
+            statusText.className = `text-[10px] font-medium uppercase tracking-wider ${colorClass}`;
+        };
+
+        const appendMessage = (role, text) => {
+            if (welcomeScreen) welcomeScreen.style.display = 'none';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-in`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble px-4 py-3 rounded-2xl text-[15px] leading-relaxed ${
+                role === 'user' 
+                ? 'bg-blue-600 text-white rounded-tr-none' 
+                : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tl-none shadow-xl'
+            }`;
+            
+            bubble.innerHTML = text.replace(/\n/g, '<br>');
+            wrapper.appendChild(bubble);
+            chatHistory.appendChild(wrapper);
+            scrollToBottom();
+        };
+
+        const quickAsk = (query) => {
+            userInput.value = query;
+            chatForm.dispatchEvent(new Event('submit'));
+        };
+
+        async function fetchWithRetry(payload, maxRetries = 5) {
+            let delay = 1000;
+            for (let i = 0; i <= maxRetries; i++) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status === 429) {
+                        if (i === maxRetries) throw new Error("Rate limit exceeded.");
+                        updateStatus(`Retrying (${i+1})...`, 'text-amber-500');
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 2;
+                        continue;
+                    }
+
+                    if (!response.ok) throw new Error("Connection Error");
+                    updateStatus('Ready', 'text-zinc-400');
+                    return await response.json();
+                } catch (error) {
+                    if (i === maxRetries) throw error;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            userInput.value = '';
+            appendMessage('user', text);
+            typingIndicator.classList.remove('hidden');
+            scrollToBottom();
+
+            conversation.push({ role: "user", parts: [{ text }] });
+            
+            try {
+                const data = await fetchWithRetry({
+                    contents: conversation,
+                    systemInstruction: {
+                        parts: [{ text: "You are a mobile-friendly AI assistant. Keep responses formatted for small screens. Use paragraphs, not walls of text. Do not mention your model name or creator unless asked." }]
+                    }
+                });
+
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+                
+                typingIndicator.classList.add('hidden');
+                appendMessage('model', aiResponse);
+                conversation.push({ role: "model", parts: [{ text: aiResponse }] });
+
+            } catch (err) {
+                typingIndicator.classList.add('hidden');
+                updateStatus('Error', 'text-red-500');
+                appendMessage('model', `⚠️ Error: ${err.message}. Please wait a moment.`);
+            }
+        });
+
+        newChatBtn.addEventListener('click', () => {
+            chatHistory.innerHTML = '';
+            chatHistory.appendChild(welcomeScreen);
+            welcomeScreen.style.display = 'flex';
+            conversation = [];
+            updateStatus('Ready', 'text-zinc-400');
+        });
+    </script>
+</body>
+</html>
