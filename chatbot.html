@@ -2,239 +2,768 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flash Mobile AI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagera AI - Launching Soon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-color: #09090b;
-            --accent-color: #3b82f6;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
+
         body {
-            background-color: var(--bg-color);
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: contain;
-        }
-        .glass-header {
-            background: rgba(9, 9, 11, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .message-bubble {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
             position: relative;
-            max-width: 88%;
-            transition: transform 0.1s ease;
         }
-        .message-bubble:active {
-            transform: scale(0.98);
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            z-index: 0;
         }
-        .chat-container::-webkit-scrollbar {
+
+        /* Countdown Overlay */
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            text-align: center;
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+
+        .countdown-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+        }
+
+        .logo {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .logo h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #6a11cb, #2575fc, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .logo p {
+            font-size: 1.2rem;
+            color: #a0a0ff;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            color: #fff;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+
+        .tagline span {
+            color: #6a11cb;
+            font-weight: 600;
+        }
+
+        /* Countdown Timer */
+        .countdown-container {
+            margin: 40px 0 60px;
+        }
+
+        .countdown-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #b8b8ff;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px 15px;
+            min-width: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 15px 35px rgba(106, 17, 203, 0.3);
+        }
+
+        .countdown-item span {
+            display: block;
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .countdown-item p {
+            font-size: 1rem;
+            color: #a0a0ff;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Launch Button */
+        .launch-btn {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.3);
+        }
+
+        .launch-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(106, 17, 203, 0.4);
+            background: linear-gradient(90deg, #2575fc, #6a11cb);
+        }
+
+        .launch-btn i {
+            font-size: 1.3rem;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid #6a11cb;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification i {
+            font-size: 1.5rem;
+            color: #6a11cb;
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 90%;
+            max-width: 450px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             display: none;
+            flex-direction: column;
+            z-index: 20;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .chat-container {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        .chatbot-container.active {
+            display: flex;
+            transform: scale(1);
+            opacity: 1;
         }
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(12px); }
+
+        .chatbot-header {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chatbot-header i {
+            font-size: 1.3rem;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8f9ff;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-in { animation: slideInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        
-        /* Mobile Keyboard Safe Area Padding */
-        .safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 16px);
+
+        .user-message {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: white;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .chatbot-input {
+            display: flex;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+            padding: 15px;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.1);
+        }
+
+        .chatbot-input button {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+
+        .chatbot-input button i {
+            font-size: 1.2rem;
+        }
+
+        /* Features Section */
+        .features {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .feature i {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature p {
+            font-size: 0.9rem;
+            color: #c0c0ff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .logo h1 {
+                font-size: 3.5rem;
+            }
+            
+            .countdown-item {
+                min-width: 100px;
+                padding: 20px 10px;
+            }
+            
+            .countdown-item span {
+                font-size: 2.8rem;
+            }
+            
+            .features {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                margin: 40px auto;
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 2.8rem;
+            }
+            
+            .tagline {
+                font-size: 1.4rem;
+            }
+            
+            .countdown {
+                gap: 10px;
+            }
+            
+            .countdown-item {
+                min-width: 80px;
+                padding: 15px 8px;
+            }
+            
+            .countdown-item span {
+                font-size: 2.2rem;
+            }
+            
+            .countdown-item p {
+                font-size: 0.9rem;
+            }
+            
+            .launch-btn {
+                padding: 15px 35px;
+                font-size: 1.1rem;
+            }
+            
+            .chatbot-container {
+                width: 95%;
+                height: 500px;
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                margin: 0 auto;
+            }
+            
+            .notification {
+                top: 20px;
+                right: 20px;
+                left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 2.2rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .countdown {
+                gap: 8px;
+            }
+            
+            .countdown-item {
+                min-width: 70px;
+                padding: 12px 5px;
+            }
+            
+            .countdown-item span {
+                font-size: 1.8rem;
+            }
+            
+            .countdown-item p {
+                font-size: 0.8rem;
+            }
+            
+            .launch-btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+            
+            .chatbot-container {
+                height: 450px;
+                border-radius: 20px;
+            }
+            
+            .chatbot-header h3 {
+                font-size: 1.2rem;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 12px;
+            }
         }
     </style>
 </head>
-<body class="text-zinc-100 h-screen flex flex-col font-sans overflow-hidden">
-
-    <!-- Mobile Header -->
-    <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-            </div>
-            <div>
-                <h1 class="font-bold text-base tracking-tight">Imagera</h1>
-                <div class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span id="status-text" class="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">Ready</span>
+<body>
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="logo">
+            <h1>IMAGERA AI</h1>
+            <p>REVOLUTIONIZING CONVERSATIONAL AI</p>
+        </div>
+        
+        <div class="tagline">
+            Launching our <span>next-generation chatbot</span> that understands context, emotions, and delivers human-like conversations.
+        </div>
+        
+        <div class="countdown-container">
+            <div class="countdown-title">Launching In</div>
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span id="days">00</span>
+                    <p>Days</p>
+                </div>
+                <div class="countdown-item">
+                    <span id="hours">00</span>
+                    <p>Hours</p>
+                </div>
+                <div class="countdown-item">
+                    <span id="minutes">00</span>
+                    <p>Minutes</p>
+                </div>
+                <div class="countdown-item">
+                    <span id="seconds">00</span>
+                    <p>Seconds</p>
                 </div>
             </div>
         </div>
-        <button id="new-chat-btn" class="p-2 bg-white/5 rounded-full hover:bg-white/10 active:scale-90 transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+        
+        <button class="launch-btn" id="launchBtn">
+            <i class="fas fa-robot"></i>
+            Preview Chatbot
         </button>
-    </header>
-
-    <!-- Chat Feed -->
-    <main id="chat-history" class="flex-1 overflow-y-auto p-5 space-y-6 chat-container">
-        <!-- Center Brand Hero -->
-        <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-full text-center space-y-6 animate-in">
-            <div class="w-20 h-20 bg-zinc-900 border border-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+        
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-brain"></i>
+                <p>Advanced Neural Network Architecture</p>
             </div>
-            <div>
-                <p class="text-2xl font-bold tracking-tight bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">Hello!</p>
-                <p class="text-zinc-500 text-sm px-8 mt-2">I'm your AI assistant, optimized for speed and efficiency.</p>
+            <div class="feature">
+                <i class="fas fa-comment-dots"></i>
+                <p>Natural Language Understanding</p>
             </div>
-            <div class="flex gap-2 w-full max-w-xs overflow-x-auto pb-2 px-4 no-scrollbar">
-                <button onclick="quickAsk('Explain Quantum Physics')" class="whitespace-nowrap bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">Explain Quantum</button>
-                <button onclick="quickAsk('Write a haiku')" class="whitespace-nowrap bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full text-xs text-zinc-400">Write a haiku</button>
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <p>Real-time Response Generation</p>
             </div>
         </div>
-    </main>
-
-    <!-- Typing Loader -->
-    <div id="typing-indicator" class="hidden px-6 py-3 flex items-center gap-3">
-        <div class="flex gap-1.5">
-            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            <strong>Welcome to Imagera AI!</strong>
+            <p>This is a preview version. Full launch coming soon.</p>
         </div>
-        <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-600">Generating</span>
+    </div>
+    
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h3><i class="fas fa-robot"></i> Imagera AI Assistant</h3>
+            <button class="close-btn" id="closeChatbot">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="message bot-message">
+                Hello! I'm Imagera AI, your intelligent assistant. I'm still in preview mode, but I can already help with many tasks. What would you like to know?
+            </div>
+        </div>
+        
+        <div class="chatbot-input">
+            <input type="text" id="chatInput" placeholder="Type your message here...">
+            <button id="sendMessage">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- Mobile Navigation / Input -->
-    <footer class="p-4 safe-bottom bg-zinc-950/80 border-t border-zinc-900">
-        <form id="chat-form" class="relative flex items-center max-w-3xl mx-auto">
-            <input 
-                type="text" 
-                id="user-input" 
-                placeholder="How can I help you?..." 
-                class="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-5 pr-14 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all placeholder-zinc-600"
-                autocomplete="off"
-            >
-            <button 
-                type="submit" 
-                id="send-btn"
-                class="absolute right-2 p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-            </button>
-        </form>
-    </footer>
-
     <script>
-        const API_KEY = "";
-        const MODEL = "gemini-2.5-flash-preview-09-2025";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
-
-        const chatHistory = document.getElementById('chat-history');
-        const chatForm = document.getElementById('chat-form');
-        const userInput = document.getElementById('user-input');
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const typingIndicator = document.getElementById('typing-indicator');
-        const statusText = document.getElementById('status-text');
-        const newChatBtn = document.getElementById('new-chat-btn');
-
-        let conversation = [];
-
-        const scrollToBottom = () => {
-            chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
-        };
-
-        const updateStatus = (text, colorClass) => {
-            statusText.innerText = text;
-            statusText.className = `text-[10px] font-medium uppercase tracking-wider ${colorClass}`;
-        };
-
-        const appendMessage = (role, text) => {
-            if (welcomeScreen) welcomeScreen.style.display = 'none';
+        // Set launch date to 3 days from now
+        const launchDate = new Date();
+        launchDate.setDate(launchDate.getDate() + 3);
+        launchDate.setHours(12, 0, 0, 0); // Set to noon
+        
+        // Countdown Timer
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = launchDate.getTime() - now;
             
-            const wrapper = document.createElement('div');
-            wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-in`;
-            
-            const bubble = document.createElement('div');
-            bubble.className = `message-bubble px-4 py-3 rounded-2xl text-[15px] leading-relaxed ${
-                role === 'user' 
-                ? 'bg-blue-600 text-white rounded-tr-none' 
-                : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-tl-none shadow-xl'
-            }`;
-            
-            bubble.innerHTML = text.replace(/\n/g, '<br>');
-            wrapper.appendChild(bubble);
-            chatHistory.appendChild(wrapper);
-            scrollToBottom();
-        };
-
-        const quickAsk = (query) => {
-            userInput.value = query;
-            chatForm.dispatchEvent(new Event('submit'));
-        };
-
-        async function fetchWithRetry(payload, maxRetries = 5) {
-            let delay = 1000;
-            for (let i = 0; i <= maxRetries; i++) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status === 429) {
-                        if (i === maxRetries) throw new Error("Rate limit exceeded.");
-                        updateStatus(`Retrying (${i+1})...`, 'text-amber-500');
-                        await new Promise(r => setTimeout(r, delay));
-                        delay *= 2;
-                        continue;
-                    }
-
-                    if (!response.ok) throw new Error("Connection Error");
-                    updateStatus('Ready', 'text-zinc-400');
-                    return await response.json();
-                } catch (error) {
-                    if (i === maxRetries) throw error;
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
-            }
-        }
-
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = userInput.value.trim();
-            if (!text) return;
-
-            userInput.value = '';
-            appendMessage('user', text);
-            typingIndicator.classList.remove('hidden');
-            scrollToBottom();
-
-            conversation.push({ role: "user", parts: [{ text }] });
-            
-            try {
-                const data = await fetchWithRetry({
-                    contents: conversation,
-                    systemInstruction: {
-                        parts: [{ text: "You are a mobile-friendly AI assistant. Keep responses formatted for small screens. Use paragraphs, not walls of text. Do not mention your model name or creator unless asked." }]
-                    }
-                });
-
-                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                daysEl.textContent = '00';
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
                 
-                typingIndicator.classList.add('hidden');
-                appendMessage('model', aiResponse);
-                conversation.push({ role: "model", parts: [{ text: aiResponse }] });
-
-            } catch (err) {
-                typingIndicator.classList.add('hidden');
-                updateStatus('Error', 'text-red-500');
-                appendMessage('model', `⚠️ Error: ${err.message}. Please wait a moment.`);
+                // Update button text if countdown is over
+                document.getElementById('launchBtn').innerHTML = '<i class="fas fa-rocket"></i> Launch Chatbot';
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            daysEl.textContent = String(days).padStart(2, '0');
+            hoursEl.textContent = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+        
+        // Show notification
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Show chatbot
+        document.getElementById('launchBtn').addEventListener('click', function() {
+            document.getElementById('countdownOverlay').classList.add('hidden');
+            document.getElementById('chatbotContainer').classList.add('active');
+            showNotification();
+            
+            // Add welcome message to chatbot
+            setTimeout(() => {
+                const messagesEl = document.getElementById('chatbotMessages');
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.className = 'message bot-message';
+                welcomeMsg.textContent = "Thanks for checking out the preview! While I'm still being trained, I can answer questions about AI, technology, and help with creative ideas.";
+                messagesEl.appendChild(welcomeMsg);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }, 500);
+        });
+        
+        // Close chatbot
+        document.getElementById('closeChatbot').addEventListener('click', function() {
+            document.getElementById('chatbotContainer').classList.remove('active');
+            document.getElementById('countdownOverlay').classList.remove('hidden');
+        });
+        
+        // Send message function
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            
+            if (!msg) return;
+            
+            const messagesEl = document.getElementById('chatbotMessages');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-message';
+            userMsg.textContent = msg;
+            messagesEl.appendChild(userMsg);
+            
+            // Clear input
+            input.value = '';
+            
+            // Scroll to bottom
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message bot-message';
+            typingIndicator.id = 'typingIndicator';
+            typingIndicator.innerHTML = '<i class="fas fa-circle"></i> <i class="fas fa-circle"></i> <i class="fas fa-circle"></i>';
+            messagesEl.appendChild(typingIndicator);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            
+            // Simulate AI response after delay
+            setTimeout(() => {
+                // Remove typing indicator
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) indicator.remove();
+                
+                // Add bot response
+                const botMsg = document.createElement('div');
+                botMsg.className = 'message bot-message';
+                
+                // Simple response logic based on user input
+                const lowerMsg = msg.toLowerCase();
+                let response = "";
+                
+                if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+                    response = "Hello! I'm Imagera AI. How can I assist you today?";
+                } else if (lowerMsg.includes('ai') || lowerMsg.includes('artificial intelligence')) {
+                    response = "AI is transforming how we interact with technology. Imagera AI uses advanced neural networks to understand context and provide meaningful conversations.";
+                } else if (lowerMsg.includes('launch') || lowerMsg.includes('release')) {
+                    response = "Imagera AI will officially launch in just a few days! The full version will have enhanced capabilities and integration options.";
+                } else if (lowerMsg.includes('feature') || lowerMsg.includes('capability')) {
+                    response = "Imagera AI features include natural language understanding, contextual awareness, multi-language support, and integration with various platforms.";
+                } else if (lowerMsg.includes('thank')) {
+                    response = "You're welcome! I'm here to help. Feel free to ask anything else.";
+                } else if (lowerMsg.includes('bye') || lowerMsg.includes('goodbye')) {
+                    response = "Goodbye! Thanks for chatting with me. See you at the official launch!";
+                } else {
+                    const responses = [
+                        "That's interesting! As a preview version, I'm still learning. Could you rephrase that?",
+                        "I'm constantly being trained to better understand queries like this. Try asking about AI or technology!",
+                        "Great question! The full version of Imagera AI will be able to handle this type of query more effectively.",
+                        "I'm still in development, but I can tell you about AI, technology, or the upcoming Imagera AI launch!",
+                        "Thanks for your question! I'm learning from every interaction to become more helpful."
+                    ];
+                    response = responses[Math.floor(Math.random() * responses.length)];
+                }
+                
+                botMsg.textContent = response;
+                messagesEl.appendChild(botMsg);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }, 1000 + Math.random() * 1000);
+        }
+        
+        // Send message on button click
+        document.getElementById('sendMessage').addEventListener('click', sendMessage);
+        
+        // Send message on Enter key
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
         });
-
-        newChatBtn.addEventListener('click', () => {
-            chatHistory.innerHTML = '';
-            chatHistory.appendChild(welcomeScreen);
-            welcomeScreen.style.display = 'flex';
-            conversation = [];
-            updateStatus('Ready', 'text-zinc-400');
-        });
+        
+        // Show notification after 2 seconds
+        setTimeout(showNotification, 2000);
+        
+        // Initial countdown update
+        updateCountdown();
     </script>
 </body>
-
 </html>
+
