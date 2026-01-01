@@ -1,769 +1,1138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imagera AI - Launching Soon</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Imagera AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+    --bg-color-light: #ffffff;
+    --bg-color-dark: #09090b;
+    --text-color-light: #1f2937;
+    --text-color-dark: #f3f4f6;
+    --accent-color: #3b82f6;
+}
 
-        body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
+[data-theme="light"] {
+    --bg-color: var(--bg-color-light);
+    --text-color: var(--text-color-light);
+}
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            z-index: 0;
-        }
+[data-theme="dark"] {
+    --bg-color: var(--bg-color-dark);
+    --text-color: var(--text-color-dark);
+}
 
-        /* Countdown Overlay */
-        .countdown-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 20px;
-            text-align: center;
-            background: rgba(15, 12, 41, 0.95);
-            backdrop-filter: blur(10px);
-            transition: all 0.8s cubic-bezier(0.86, 0, 0.07, 1);
-        }
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
 
-        .countdown-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-100%);
-        }
+.glass-header {
+    background: rgba(var(--bg-color-rgb), 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 
-        .logo {
-            margin-bottom: 30px;
-            text-align: center;
-        }
+[data-theme="dark"] .glass-header {
+    background: rgba(9, 9, 11, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-        .logo h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 900;
-            background: linear-gradient(90deg, #6a11cb, #2575fc, #00d2ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
+[data-theme="light"] .glass-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
 
-        .logo p {
-            font-size: 1.2rem;
-            color: #a0a0ff;
-            font-weight: 300;
-            letter-spacing: 2px;
-        }
+.message-bubble {
+    position: relative;
+    max-width: 88%;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
 
-        .tagline {
-            font-size: 1.8rem;
-            margin-bottom: 40px;
-            color: #fff;
-            max-width: 700px;
-            line-height: 1.5;
-        }
+.chat-container::-webkit-scrollbar {
+    display: none;
+}
 
-        .tagline span {
-            color: #6a11cb;
-            font-weight: 600;
-        }
+.chat-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+}
 
-        /* Countdown Timer */
-        .countdown-container {
-            margin: 40px 0 60px;
-        }
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
 
-        .countdown-title {
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            color: #b8b8ff;
-        }
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
-        .countdown {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        .countdown-item {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 25px 15px;
-            min-width: 120px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 
-        .countdown-item:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 15px 35px rgba(106, 17, 203, 0.3);
-        }
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
 
-        .countdown-item span {
-            display: block;
-            font-size: 3.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1;
-        }
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 
-        .countdown-item p {
-            font-size: 1rem;
-            color: #a0a0ff;
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+@keyframes copySuccess {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 
-        /* Launch Button */
-        .launch-btn {
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            color: white;
-            border: none;
-            padding: 18px 45px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.3);
-        }
+.safe-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
 
-        .launch-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(106, 17, 203, 0.4);
-            background: linear-gradient(90deg, #2575fc, #6a11cb);
-        }
+.safe-top {
+    padding-top: env(safe-area-inset-top);
+}
 
-        .launch-btn i {
-            font-size: 1.3rem;
-        }
+.animate-slide-up {
+    animation: slideInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 100;
-            transform: translateX(400px);
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border-left: 4px solid #6a11cb;
-        }
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
 
-        .notification.show {
-            transform: translateX(0);
-        }
+.animate-fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
 
-        .notification i {
-            font-size: 1.5rem;
-            color: #6a11cb;
-        }
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
 
-        /* Chatbot Container */
-        .chatbot-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 90%;
-            max-width: 450px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            display: none;
-            flex-direction: column;
-            z-index: 20;
-            transform: scale(0.9);
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+.animate-copy-success {
+    animation: copySuccess 0.3s ease-out;
+}
 
-        .chatbot-container.active {
-            display: flex;
-            transform: scale(1);
-            opacity: 1;
-        }
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    .message-bubble {
+        max-width: 92%;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+}
 
-        .chatbot-header {
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+/* Prevent zoom on iOS input focus */
+@media screen and (max-width: 767px) {
+    input, textarea {
+        font-size: 16px !important;
+    }
+}
 
-        .chatbot-header h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+/* Better touch targets */
+button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+}
 
-        .chatbot-header i {
-            font-size: 1.3rem;
-        }
+/* Loading animation */
+.loading-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
 
-        .close-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.loading-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+    animation: dot-pulse 1.4s infinite ease-in-out both;
+}
 
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg);
-        }
+.loading-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
 
-        .chatbot-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: #f8f9ff;
-        }
+.loading-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
 
-        .message {
-            max-width: 85%;
-            padding: 15px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease;
-        }
+@keyframes dot-pulse {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+/* Hide elements */
+.hidden {
+    display: none !important;
+}
 
-        .user-message {
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 5px;
-        }
+/* Show elements */
+.block {
+    display: block !important;
+}
 
-        .bot-message {
-            background: white;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
+.flex {
+    display: flex !important;
+}
 
-        .chatbot-input {
-            display: flex;
-            border-top: 1px solid #e0e0e0;
-            background: white;
-            padding: 15px;
-        }
+/* Welcome screen animation */
+.welcome-screen {
+    min-height: calc(100vh - 140px);
+}
 
-        .chatbot-input input {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 50px;
-            outline: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
+/* Copy button styles */
+.copy-button {
+    opacity: 0;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
 
-        .chatbot-input input:focus {
-            border-color: #6a11cb;
-            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.1);
-        }
+[data-theme="dark"] .copy-button {
+    background: rgba(30, 30, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-        .chatbot-input button {
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-left: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+[data-theme="light"] .copy-button {
+    background: rgba(240, 240, 245, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
 
-        .chatbot-input button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
-        }
+.message-bubble:hover .copy-button,
+.message-bubble:active .copy-button,
+.copy-button:focus {
+    opacity: 1;
+}
 
-        .chatbot-input button i {
-            font-size: 1.2rem;
-        }
+@media (hover: none) {
+    .copy-button {
+        opacity: 0.7;
+    }
+}
 
-        /* Features Section */
-        .features {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 300px;
-        }
+/* Toast notification */
+.copy-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
 
-        .feature {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+[data-theme="dark"] .copy-toast {
+    background: rgba(30, 30, 35, 0.95);
+}
 
-        .feature:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateX(5px);
-        }
+[data-theme="light"] .copy-toast {
+    background: rgba(255, 255, 255, 0.95);
+}
 
-        .feature i {
-            font-size: 1.5rem;
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+/* Code block styling */
+.message-bubble code {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid;
+}
 
-        .feature p {
-            font-size: 0.9rem;
-            color: #c0c0ff;
-        }
+[data-theme="dark"] .message-bubble code {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
 
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .logo h1 {
-                font-size: 3.5rem;
-            }
-            
-            .countdown-item {
-                min-width: 100px;
-                padding: 20px 10px;
-            }
-            
-            .countdown-item span {
-                font-size: 2.8rem;
-            }
-            
-            .features {
-                position: relative;
-                bottom: auto;
-                left: auto;
-                margin: 40px auto;
-                max-width: 90%;
-            }
-        }
+[data-theme="light"] .message-bubble code {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
 
-        @media (max-width: 768px) {
-            .logo h1 {
-                font-size: 2.8rem;
-            }
-            
-            .tagline {
-                font-size: 1.4rem;
-            }
-            
-            .countdown {
-                gap: 10px;
-            }
-            
-            .countdown-item {
-                min-width: 80px;
-                padding: 15px 8px;
-            }
-            
-            .countdown-item span {
-                font-size: 2.2rem;
-            }
-            
-            .countdown-item p {
-                font-size: 0.9rem;
-            }
-            
-            .launch-btn {
-                padding: 15px 35px;
-                font-size: 1.1rem;
-            }
-            
-            .chatbot-container {
-                width: 95%;
-                height: 500px;
-                bottom: 20px;
-                right: 20px;
-                left: 20px;
-                margin: 0 auto;
-            }
-            
-            .notification {
-                top: 20px;
-                right: 20px;
-                left: 20px;
-            }
-        }
+.message-bubble pre {
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 8px 0;
+    border: 1px solid;
+}
 
-        @media (max-width: 480px) {
-            .logo h1 {
-                font-size: 2.2rem;
-            }
-            
-            .tagline {
-                font-size: 1.2rem;
-            }
-            
-            .countdown {
-                gap: 8px;
-            }
-            
-            .countdown-item {
-                min-width: 70px;
-                padding: 12px 5px;
-            }
-            
-            .countdown-item span {
-                font-size: 1.8rem;
-            }
-            
-            .countdown-item p {
-                font-size: 0.8rem;
-            }
-            
-            .launch-btn {
-                padding: 12px 30px;
-                font-size: 1rem;
-            }
-            
-            .chatbot-container {
-                height: 450px;
-                border-radius: 20px;
-            }
-            
-            .chatbot-header h3 {
-                font-size: 1.2rem;
-            }
-            
-            .message {
-                max-width: 90%;
-                padding: 12px;
-            }
-        }
-    </style>
+[data-theme="dark"] .message-bubble pre {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .message-bubble pre {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.message-bubble pre code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    font-size: 0.85em;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.theme-toggle:hover {
+    transform: rotate(12deg);
+}
+
+[data-theme="dark"] .sun-icon {
+    display: none;
+}
+
+[data-theme="light"] .moon-icon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .theme-toggle {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Feature cards */
+.feature-card {
+    border: 1px solid;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .feature-card {
+    background: rgba(30, 30, 35, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .feature-card {
+    background: rgba(240, 240, 245, 0.5);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .feature-card:hover {
+    background: rgba(40, 40, 45, 0.7);
+}
+
+[data-theme="light"] .feature-card:hover {
+    background: rgba(250, 250, 255, 0.7);
+}
+
+/* Footer */
+[data-theme="dark"] footer {
+    background: rgba(9, 9, 11, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] footer {
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Input field */
+[data-theme="dark"] #chat-input {
+    background: rgba(30, 30, 35, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+[data-theme="light"] #chat-input {
+    background: rgba(240, 240, 245, 0.8);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1f2937;
+}
+
+[data-theme="dark"] #chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="light"] #chat-input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* Status indicator */
+[data-theme="dark"] #status-text {
+    color: #9ca3af;
+}
+
+[data-theme="light"] #status-text {
+    color: #6b7280;
+}
+
+/* Welcome text colors */
+[data-theme="dark"] .welcome-text {
+    background: linear-gradient(to bottom, #ffffff, #9ca3af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+[data-theme="light"] .welcome-text {
+    background: linear-gradient(to bottom, #1f2937, #4b5563);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Typing indicator */
+[data-theme="dark"] #typing-indicator {
+    color: #9ca3af;
+}
+
+[data-theme="light"] #typing-indicator {
+    color: #6b7280;
+}
+</style>
 </head>
-<body>
-    <!-- Countdown Overlay -->
-    <div class="countdown-overlay" id="countdownOverlay">
-        <div class="logo">
-            <h1>IMAGERA AI</h1>
-            <p>REVOLUTIONIZING CONVERSATIONAL AI</p>
-        </div>
-        
-        <div class="tagline">
-            Launching our <span>next-generation chatbot</span> that understands context, emotions, and delivers human-like conversations.
-        </div>
-        
-        <div class="countdown-container">
-            <div class="countdown-title">Launching In</div>
-            <div class="countdown">
-                <div class="countdown-item">
-                    <span id="days">00</span>
-                    <p>Days</p>
-                </div>
-                <div class="countdown-item">
-                    <span id="hours">00</span>
-                    <p>Hours</p>
-                </div>
-                <div class="countdown-item">
-                    <span id="minutes">00</span>
-                    <p>Minutes</p>
-                </div>
-                <div class="countdown-item">
-                    <span id="seconds">00</span>
-                    <p>Seconds</p>
+<body class="font-sans overflow-hidden">
+
+<!-- Single Page App - No page switching -->
+<div id="app-container" class="h-full flex flex-col">
+
+    <!-- Header -->
+    <header class="glass-header px-5 py-4 flex justify-between items-center safe-top">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight">Imagera AI</h1>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span id="status-text" class="text-[10px] font-medium uppercase tracking-wider">Ready</span>
                 </div>
             </div>
         </div>
-        
-        <button class="launch-btn" id="launchBtn">
-            <i class="fas fa-robot"></i>
-            Preview Chatbot
-        </button>
-        
-        <div class="features">
-            <div class="feature">
-                <i class="fas fa-brain"></i>
-                <p>Advanced Neural Network Architecture</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-comment-dots"></i>
-                <p>Natural Language Understanding</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-bolt"></i>
-                <p>Real-time Response Generation</p>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <i class="fas fa-info-circle"></i>
-        <div>
-            <strong>Welcome to Imagera AI!</strong>
-            <p>This is a preview version. Full launch coming soon.</p>
-        </div>
-    </div>
-    
-    <!-- Chatbot Container -->
-    <div class="chatbot-container" id="chatbotContainer">
-        <div class="chatbot-header">
-            <h3><i class="fas fa-robot"></i> Imagera AI Assistant</h3>
-            <button class="close-btn" id="closeChatbot">
-                <i class="fas fa-times"></i>
+        <div class="flex items-center gap-2">
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="theme-toggle p-2 rounded-full hover:scale-105 active:scale-95 transition-all duration-200" aria-label="Toggle theme">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sun-icon text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 moon-icon text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                </svg>
+            </button>
+            
+            <!-- New Chat Button -->
+            <button id="new-chat-btn" class="p-2 rounded-full hover:scale-105 active:scale-95 transition-all duration-200" aria-label="New chat">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
             </button>
         </div>
-        
-        <div class="chatbot-messages" id="chatbotMessages">
-            <div class="message bot-message">
-                Hello! I'm Imagera AI, your intelligent assistant. I'm still in preview mode, but I can already help with many tasks. What would you like to know?
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 chat-container">
+        <!-- Welcome Screen (Shows initially) -->
+        <div id="welcome-screen" class="welcome-screen flex flex-col items-center justify-center text-center space-y-8 animate-slide-up px-4">
+            <div class="space-y-6">
+                <div class="w-24 h-24 mx-auto border rounded-3xl flex items-center justify-center shadow-2xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 8V4H8"/>
+                        <rect width="16" height="12" x="4" y="8" rx="2"/>
+                        <path d="M2 14h2"/>
+                        <path d="M20 14h2"/>
+                        <path d="M15 13v2"/>
+                        <path d="M9 13v2"/>
+                    </svg>
+                </div>
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold tracking-tight welcome-text">
+                        Hello, I'm Imagera
+                    </h2>
+                    <p class="text-base leading-relaxed px-4 opacity-80">
+                        Your intelligent AI assistant optimized for mobile devices. Start chatting below!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="space-y-4 w-full max-w-sm">
+                <h3 class="text-lg font-semibold opacity-90">Try asking me:</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="quickAsk('Help me write a professional email')" class="feature-card rounded-2xl p-4 text-center space-y-3 hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                        <div class="w-12 h-12 mx-auto bg-blue-500/10 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium">Write Email</p>
+                    </button>
+                    <button onclick="quickAsk('Explain quantum computing in simple terms')" class="feature-card rounded-2xl p-4 text-center space-y-3 hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                        <div class="w-12 h-12 mx-auto bg-purple-500/10 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium">Explain Concept</p>
+                    </button>
+                    <button onclick="quickAsk('Plan a healthy daily schedule for me')" class="feature-card rounded-2xl p-4 text-center space-y-3 hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                        <div class="w-12 h-12 mx-auto bg-green-500/10 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium">Plan Schedule</p>
+                    </button>
+                    <button onclick="quickAsk('Create a workout routine for beginners')" class="feature-card rounded-2xl p-4 text-center space-y-3 hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                        <div class="w-12 h-12 mx-auto bg-orange-500/10 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium">Fitness Plan</p>
+                    </button>
+                </div>
             </div>
         </div>
-        
-        <div class="chatbot-input">
-            <input type="text" id="chatInput" placeholder="Type your message here...">
-            <button id="sendMessage">
-                <i class="fas fa-paper-plane"></i>
-            </button>
+
+        <!-- Chat messages will be appended here -->
+    </main>
+
+    <!-- Typing Loader -->
+    <div id="typing-indicator" class="hidden px-6 py-4 animate-fade-in">
+        <div class="flex items-center gap-3 max-w-xs ml-4">
+            <div class="w-10 h-10 flex items-center justify-center border rounded-2xl">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="text-[13px] font-medium">Thinking...</div>
         </div>
     </div>
 
-    <script>
-        // Set launch date to 3 days from now
-        const launchDate = new Date();
-        launchDate.setDate(launchDate.getDate() + 3);
-        launchDate.setHours(12, 0, 0, 0); // Set to noon
-        
-        // Countdown Timer
-        const daysEl = document.getElementById('days');
-        const hoursEl = document.getElementById('hours');
-        const minutesEl = document.getElementById('minutes');
-        const secondsEl = document.getElementById('seconds');
-        
-        const countdownInterval = setInterval(updateCountdown, 1000);
-        
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = launchDate.getTime() - now;
+    <!-- Copy Success Toast -->
+    <div id="copy-toast" class="copy-toast hidden rounded-2xl p-6 text-center max-w-xs">
+        <div class="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-bold mb-1">Copied!</h3>
+        <p class="text-sm opacity-70">Text copied to clipboard</p>
+    </div>
+
+    <!-- Chat Input -->
+    <footer class="p-4 safe-bottom border-t">
+        <form id="chat-form" class="relative flex items-center max-w-3xl mx-auto">
+            <input 
+                type="text" 
+                id="chat-input" 
+                placeholder="Ask me anything..." 
+                class="w-full rounded-2xl pl-5 pr-14 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all placeholder-op-60"
+                autocomplete="off"
+                autocorrect="on"
+                autocapitalize="sentences"
+                spellcheck="true"
+                enterkeyhint="send"
+            >
+            <button 
+                type="submit" 
+                id="send-btn" 
+                class="absolute right-2 p-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 transition-all"
+                aria-label="Send message"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m22 2-7 20-4-9-9-4Z"/>
+                    <path d="M22 2 11 13"/>
+                </svg>
+            </button>
+        </form>
+        <div class="text-center mt-3">
+            <p class="text-[10px] opacity-50">Press Enter or tap send to chat</p>
+        </div>
+    </footer>
+</div>
+
+<script>
+const WORKER_URL = "https://purple-shadow-92a1.antokochumon2.workers.dev/";
+
+// DOM Elements
+const appContainer = document.getElementById('app-container');
+const chatHistory = document.getElementById('chat-history');
+const welcomeScreen = document.getElementById('welcome-screen');
+const chatInput = document.getElementById('chat-input');
+const chatForm = document.getElementById('chat-form');
+const typingIndicator = document.getElementById('typing-indicator');
+const statusText = document.getElementById('status-text');
+const newChatBtn = document.getElementById('new-chat-btn');
+const themeToggle = document.getElementById('theme-toggle');
+const sendBtn = document.getElementById('send-btn');
+const copyToast = document.getElementById('copy-toast');
+
+// State
+let conversation = [];
+let isProcessing = false;
+let messageCount = 0;
+
+// Theme management
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+let currentTheme = localStorage.getItem('theme') || (prefersDarkScheme.matches ? 'dark' : 'light');
+
+// Initialize theme
+function initTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+    
+    // Update theme toggle icon
+    updateThemeIcon();
+}
+
+// Update theme icon
+function updateThemeIcon() {
+    const sunIcon = document.querySelector('.sun-icon');
+    const moonIcon = document.querySelector('.moon-icon');
+    
+    if (currentTheme === 'dark') {
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (moonIcon) moonIcon.style.display = 'block';
+    } else {
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
+    }
+}
+
+// Toggle theme
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+    updateThemeIcon();
+}
+
+// Initialize
+window.addEventListener('load', () => {
+    // Initialize theme
+    initTheme();
+    
+    // Focus on chat input
+    setTimeout(() => {
+        if (chatInput) {
+            chatInput.focus();
+        }
+    }, 500);
+});
+
+// Scroll to bottom of chat
+function scrollToBottom() {
+    if (chatHistory) {
+        setTimeout(() => {
+            chatHistory.scrollTo({
+                top: chatHistory.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+}
+
+// Update status indicator
+function updateStatus(text, colorClass = '') {
+    if (statusText) {
+        statusText.innerText = text;
+        if (colorClass) {
+            statusText.className = `text-[10px] font-medium uppercase tracking-wider ${colorClass}`;
+        }
+    }
+}
+
+// Show copy success toast
+function showCopyToast() {
+    if (!copyToast) return;
+    
+    copyToast.classList.remove('hidden');
+    copyToast.classList.add('animate-copy-success');
+    
+    // Hide after 2 seconds
+    setTimeout(() => {
+        copyToast.classList.add('animate-fade-out');
+        setTimeout(() => {
+            copyToast.classList.add('hidden');
+            copyToast.classList.remove('animate-fade-out', 'animate-copy-success');
+        }, 300);
+    }, 2000);
+}
+
+// Copy text to clipboard
+async function copyToClipboard(text) {
+    try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
             
-            if (distance < 0) {
-                clearInterval(countdownInterval);
-                daysEl.textContent = '00';
-                hoursEl.textContent = '00';
-                minutesEl.textContent = '00';
-                secondsEl.textContent = '00';
-                
-                // Update button text if countdown is over
-                document.getElementById('launchBtn').innerHTML = '<i class="fas fa-rocket"></i> Launch Chatbot';
-                return;
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (!successful) {
+                throw new Error('Copy command failed');
             }
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            daysEl.textContent = String(days).padStart(2, '0');
-            hoursEl.textContent = String(hours).padStart(2, '0');
-            minutesEl.textContent = String(minutes).padStart(2, '0');
-            secondsEl.textContent = String(seconds).padStart(2, '0');
         }
         
-        // Show notification
-        function showNotification() {
-            const notification = document.getElementById('notification');
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
+        // Show success toast
+        showCopyToast();
+        
+        // Haptic feedback on mobile
+        if ('vibrate' in navigator) {
+            navigator.vibrate(50);
         }
         
-        // Show chatbot
-        document.getElementById('launchBtn').addEventListener('click', function() {
-            document.getElementById('countdownOverlay').classList.add('hidden');
-            document.getElementById('chatbotContainer').classList.add('active');
-            showNotification();
-            
-            // Add welcome message to chatbot
-            setTimeout(() => {
-                const messagesEl = document.getElementById('chatbotMessages');
-                const welcomeMsg = document.createElement('div');
-                welcomeMsg.className = 'message bot-message';
-                welcomeMsg.textContent = "Thanks for checking out the preview! While I'm still being trained, I can answer questions about AI, technology, and help with creative ideas.";
-                messagesEl.appendChild(welcomeMsg);
-                messagesEl.scrollTop = messagesEl.scrollHeight;
-            }, 500);
-        });
+        return true;
+    } catch (err) {
+        console.error('Failed to copy text:', err);
         
-        // Close chatbot
-        document.getElementById('closeChatbot').addEventListener('click', function() {
-            document.getElementById('chatbotContainer').classList.remove('active');
-            document.getElementById('countdownOverlay').classList.remove('hidden');
-        });
+        // Fallback: Show text in alert for manual copy
+        alert('Copy failed. Here is the text:\n\n' + text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+        return false;
+    }
+}
+
+// Create copy button element
+function createCopyButton(textToCopy) {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-button absolute -top-3 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500/50';
+    copyBtn.setAttribute('aria-label', 'Copy message');
+    copyBtn.setAttribute('title', 'Copy to clipboard');
+    
+    // Copy icon
+    copyBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+    `;
+    
+    // Copy functionality
+    copyBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         
-        // Send message function
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            
-            if (!msg) return;
-            
-            const messagesEl = document.getElementById('chatbotMessages');
-            
-            // Add user message
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user-message';
-            userMsg.textContent = msg;
-            messagesEl.appendChild(userMsg);
-            
-            // Clear input
-            input.value = '';
-            
-            // Scroll to bottom
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-            
-            // Show typing indicator
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message bot-message';
-            typingIndicator.id = 'typingIndicator';
-            typingIndicator.innerHTML = '<i class="fas fa-circle"></i> <i class="fas fa-circle"></i> <i class="fas fa-circle"></i>';
-            messagesEl.appendChild(typingIndicator);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-            
-            // Simulate AI response after delay
-            setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.getElementById('typingIndicator');
-                if (indicator) indicator.remove();
-                
-                // Add bot response
-                const botMsg = document.createElement('div');
-                botMsg.className = 'message bot-message';
-                
-                // Simple response logic based on user input
-                const lowerMsg = msg.toLowerCase();
-                let response = "";
-                
-                if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
-                    response = "Hello! I'm Imagera AI. How can I assist you today?";
-                } else if (lowerMsg.includes('ai') || lowerMsg.includes('artificial intelligence')) {
-                    response = "AI is transforming how we interact with technology. Imagera AI uses advanced neural networks to understand context and provide meaningful conversations.";
-                } else if (lowerMsg.includes('launch') || lowerMsg.includes('release')) {
-                    response = "Imagera AI will officially launch in just a few days! The full version will have enhanced capabilities and integration options.";
-                } else if (lowerMsg.includes('feature') || lowerMsg.includes('capability')) {
-                    response = "Imagera AI features include natural language understanding, contextual awareness, multi-language support, and integration with various platforms.";
-                } else if (lowerMsg.includes('thank')) {
-                    response = "You're welcome! I'm here to help. Feel free to ask anything else.";
-                } else if (lowerMsg.includes('bye') || lowerMsg.includes('goodbye')) {
-                    response = "Goodbye! Thanks for chatting with me. See you at the official launch!";
-                } else {
-                    const responses = [
-                        "That's interesting! As a preview version, I'm still learning. Could you rephrase that?",
-                        "I'm constantly being trained to better understand queries like this. Try asking about AI or technology!",
-                        "Great question! The full version of Imagera AI will be able to handle this type of query more effectively.",
-                        "I'm still in development, but I can tell you about AI, technology, or the upcoming Imagera AI launch!",
-                        "Thanks for your question! I'm learning from every interaction to become more helpful."
-                    ];
-                    response = responses[Math.floor(Math.random() * responses.length)];
+        // Change icon to loading
+        copyBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        `;
+        
+        // Copy text
+        await copyToClipboard(textToCopy);
+        
+        // Change icon to success
+        copyBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        `;
+        
+        // Reset icon after 2 seconds
+        setTimeout(() => {
+            copyBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            `;
+        }, 2000);
+    });
+    
+    return copyBtn;
+}
+
+// Format message text (convert HTML back to plain text for copying)
+function getPlainText(html) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Replace br with newlines
+    const brs = tempDiv.getElementsByTagName('br');
+    for (let i = brs.length - 1; i >= 0; i--) {
+        const br = brs[i];
+        br.parentNode.replaceChild(document.createTextNode('\n'), br);
+    }
+    
+    // Remove HTML tags but keep text content
+    return tempDiv.textContent || tempDiv.innerText || '';
+}
+
+// Append message to chat
+function appendMessage(role, text, messageId = null) {
+    if (!chatHistory) return;
+    
+    // Hide welcome screen after first message
+    if (welcomeScreen && welcomeScreen.style.display !== 'none' && messageCount === 0) {
+        welcomeScreen.style.display = 'none';
+    }
+    
+    messageCount++;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up mb-4`;
+    
+    // Generate unique ID for each message
+    const uniqueId = messageId || `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    wrapper.id = uniqueId;
+    
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble px-4 py-3.5 rounded-2xl text-[15px] leading-relaxed select-text relative ${
+        role === 'user' 
+            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none shadow-lg' 
+            : 'border rounded-bl-none shadow-xl'
+    }`;
+    
+    if (role === 'model') {
+        if (currentTheme === 'dark') {
+            bubble.classList.add('bg-zinc-900/80', 'border-zinc-800', 'text-zinc-100');
+        } else {
+            bubble.classList.add('bg-zinc-50/80', 'border-zinc-200', 'text-zinc-800');
+        }
+    }
+    
+    // Store original text for copying
+    const originalText = text;
+    
+    // Format text with markdown-like parsing
+    const formattedText = text
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        // Convert **bold** to strong
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+        // Convert *italic* to em
+        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+        // Convert `code` to code blocks
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Convert ```code blocks``` to pre blocks
+        .replace(/```(\w+)?\n([\s\S]*?)```/g, '<div class="relative"><pre class="mt-2 mb-2 p-3 rounded-lg overflow-x-auto"><code class="text-sm font-mono">$2</code></pre><button class="absolute top-2 right-2 copy-code-btn w-7 h-7 rounded flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity" data-code="$2"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div>')
+        // Convert newlines to br
+        .replace(/\n/g, '<br>')
+        // Convert bullet points
+        .replace(/^\s*[-•]\s+(.+)$/gm, '<span class="block ml-4"><span class="absolute -ml-4">•</span> $1</span>')
+        // Convert numbered lists
+        .replace(/^\s*(\d+)\.\s+(.+)$/gm, '<span class="block ml-4"><span class="absolute -ml-4">$1.</span> $2</span>');
+    
+    bubble.innerHTML = formattedText;
+    
+    // Add copy button for AI responses
+    if (role === 'model') {
+        const copyButton = createCopyButton(originalText);
+        bubble.appendChild(copyButton);
+        
+        // Add hover effect for better UX on mobile
+        bubble.style.cursor = 'pointer';
+        bubble.addEventListener('click', (e) => {
+            // Only trigger if not clicking on a button or link
+            if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.copy-code-btn')) {
+                copyButton.style.opacity = '1';
+                setTimeout(() => {
+                    copyButton.style.opacity = '';
+                }, 2000);
+            }
+        });
+    }
+    
+    wrapper.appendChild(bubble);
+    chatHistory.appendChild(wrapper);
+    
+    // Add event listeners to code block copy buttons
+    setTimeout(() => {
+        const codeCopyButtons = wrapper.querySelectorAll('.copy-code-btn');
+        codeCopyButtons.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const code = btn.getAttribute('data-code');
+                if (code) {
+                    await copyToClipboard(code);
                 }
-                
-                botMsg.textContent = response;
-                messagesEl.appendChild(botMsg);
-                messagesEl.scrollTop = messagesEl.scrollHeight;
-            }, 1000 + Math.random() * 1000);
-        }
+            });
+        });
+    }, 100);
+    
+    scrollToBottom();
+    
+    return uniqueId;
+}
+
+// Quick ask function for suggestion buttons
+function quickAsk(query) {
+    if (!chatInput) return;
+    
+    chatInput.value = query;
+    chatForm.dispatchEvent(new Event('submit', { bubbles: true }));
+}
+
+// Handle chat submission
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (isProcessing) return;
+    
+    const text = chatInput.value.trim();
+    if (!text) return;
+    
+    isProcessing = true;
+    chatInput.value = '';
+    
+    // Add slight delay for better UX
+    setTimeout(() => {
+        chatInput.focus();
+    }, 100);
+    
+    const userMessageId = appendMessage('user', text);
+    
+    if (typingIndicator) {
+        typingIndicator.classList.remove('hidden');
+    }
+    
+    scrollToBottom();
+    
+    // Add user message to conversation
+    conversation.push({ role: "user", parts: [{ text }] });
+    
+    try {
+        updateStatus('Thinking...', 'text-blue-500');
         
-        // Send message on button click
-        document.getElementById('sendMessage').addEventListener('click', sendMessage);
-        
-        // Send message on Enter key
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        const data = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: conversation,
+                systemInstruction: { 
+                    parts: [{ 
+                        text: "You are Imagera, a mobile-friendly AI assistant. Keep responses concise and formatted for small screens. Use paragraphs, bullet points when helpful, and avoid walls of text. Be helpful, friendly, and efficient. Do not mention your model name or creator unless explicitly asked. Format code properly with backticks." 
+                    }] 
+                }
+            })
         });
         
-        // Show notification after 2 seconds
-        setTimeout(showNotification, 2000);
+        if (!data.ok) {
+            throw new Error(`Server error: ${data.status}`);
+        }
         
-        // Initial countdown update
-        updateCountdown();
-    </script>
+        const result = await data.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        const aiResponse = result.candidates?.[0]?.content?.parts?.[0]?.text || 
+                          result.response || 
+                          "I apologize, but I didn't receive a proper response. Could you try again?";
+        
+        if (typingIndicator) {
+            typingIndicator.classList.add('hidden');
+        }
+        
+        const aiMessageId = appendMessage('model', aiResponse);
+        conversation.push({ role: "model", parts: [{ text: aiResponse }] });
+        
+        updateStatus('Ready');
+        
+    } catch (err) {
+        if (typingIndicator) {
+            typingIndicator.classList.add('hidden');
+        }
+        
+        updateStatus('Error', 'text-red-500');
+        
+        const errorMessage = err.message.includes('Rate limit') 
+            ? "⚠️ Too many requests. Please wait a moment before trying again." 
+            : `⚠️ Connection issue: ${err.message}. Please check your connection and try again.`;
+        
+        appendMessage('model', errorMessage);
+        
+        setTimeout(() => {
+            updateStatus('Ready');
+        }, 3000);
+        
+        console.error('Chat error:', err);
+    } finally {
+        isProcessing = false;
+        scrollToBottom();
+    }
+});
+
+// New chat button - clears conversation
+newChatBtn.addEventListener('click', () => {
+    if (isProcessing) {
+        if (confirm('A message is being processed. Start new chat anyway?')) {
+            isProcessing = false;
+            if (typingIndicator) {
+                typingIndicator.classList.add('hidden');
+            }
+        } else {
+            return;
+        }
+    }
+    
+    // Clear chat history but keep welcome screen
+    if (chatHistory) {
+        // Keep only the welcome screen
+        const welcomeScreen = document.getElementById('welcome-screen');
+        chatHistory.innerHTML = '';
+        if (welcomeScreen) {
+            welcomeScreen.style.display = 'flex';
+            chatHistory.appendChild(welcomeScreen);
+        }
+    }
+    
+    // Reset conversation
+    conversation = [];
+    messageCount = 0;
+    
+    updateStatus('Ready');
+    
+    // Focus on input
+    setTimeout(() => {
+        if (chatInput) {
+            chatInput.focus();
+        }
+    }, 100);
+});
+
+// Theme toggle event
+themeToggle.addEventListener('click', toggleTheme);
+
+// Handle Enter key in chat input
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+});
+
+// Auto-focus on page visibility change
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        setTimeout(() => {
+            chatInput.focus();
+        }, 100);
+    }
+});
+
+// Handle orientation change
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        scrollToBottom();
+    }, 300);
+});
+
+// Haptic feedback on mobile
+if ('vibrate' in navigator) {
+    sendBtn.addEventListener('click', () => {
+        navigator.vibrate(10);
+    });
+    
+    // Add haptic feedback to suggestion buttons
+    document.querySelectorAll('.feature-card').forEach(button => {
+        button.addEventListener('click', () => {
+            navigator.vibrate(10);
+        });
+    });
+}
+
+// Initialize copy buttons for existing messages on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // This ensures any pre-existing messages get copy buttons
+    setTimeout(() => {
+        const aiMessages = document.querySelectorAll('.message-bubble:not(:has(.copy-button))');
+        aiMessages.forEach(bubble => {
+            if (!bubble.closest('.justify-end')) { // Not user messages
+                const text = getPlainText(bubble.innerHTML);
+                if (text.trim().length > 0) {
+                    const copyButton = createCopyButton(text);
+                    bubble.appendChild(copyButton);
+                }
+            }
+        });
+    }, 1000);
+});
+</script>
 </body>
 </html>
-
