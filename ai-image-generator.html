@@ -684,48 +684,39 @@ textarea:focus, select:focus {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const $ = id => document.getElementById(id);
-
     const generateBtn = $('generate-btn');
     const modelSelect = $('image-style');
     const promptInput = $('image-prompt');
     const ratioSelect = $('image-ratio');
-
     const loadingState = $('loading-state');
     const loadingText = $('loading-text');
     const progressText = $('progress-text');
     const progressBar = $('progress-bar');
-
     const resultContainer = $('result-container');
     const resultImage = $('result-image');
     const downloadBtn = $('download-btn');
     const saveBtn = $('save-btn');
     const deleteBtn = $('delete-btn');
-
     const galleryGrid = $('gallery-grid');
     const emptyGallery = $('empty-gallery');
-
     const warningModal = $('warning-modal');
     const reportModal = $('report-modal');
     const termsModal = $('terms-modal');
 
     const API_BASE = 'https://stablehorde.net/api/v2';
-    const API_KEY = 'Bi-aq4T72lBfF4UJjsMzNg';
-    const CLIENT_AGENT = 'Imagera:1.0:antokochumon.github.io';
-
+    // Public browser apps must not contain a private API key. This uses AI Horde's
+    // anonymous key. For a production app, put your own key behind your backend.
+    const API_KEY = '0000000000';
+    const CLIENT_AGENT = 'Imagera:1.1:antokochumon.github.io';
+    const MAX_MODEL_RETRIES = 3;
     const PROHIBITED_TERMS = [
-        'pornography', 'pornographic', 'hentai',
-        'nude', 'nudity', 'naked', 'sexual',
-        'sexually explicit', 'explicit sexual',
-        'child porn', 'child pornography',
-        'underage sexual', 'sexual abuse',
+        'pornography', 'pornographic', 'hentai', 'nude', 'nudity', 'naked',
+        'child porn', 'child pornography', 'underage sexual', 'sexual abuse',
         'rape', 'bestiality', 'graphic violence'
     ];
-
-    const NSFW_THRESHOLDS = {
-        Porn: 0.60,
-        Hentai: 0.60,
-        Sexy: 0.80
-    };
+    // NSFWJS's "Sexy" class often flags ordinary portraits. Only use it at a
+    // very high confidence; explicit classes have stricter, lower thresholds.
+    const NSFW_THRESHOLDS = { Porn: 0.75, Hentai: 0.75, Sexy: 0.97 };
 
     let storedImages = [];
     let generatedImageBlob = null;
@@ -736,476 +727,263 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGenerating = false;
     let nsfwModelPromise = null;
     let reportingIndex = null;
+    let attemptedModels = [];
+    let activePrompt = '';
+    let activeDimensions = { width: 512, height: 512 };
 
     try {
-        const saved = JSON.parse(
-            localStorage.getItem('aiGeneratedImages') || '[]'
-        );
+        const saved = JSON.parse(localStorage.getItem('aiGeneratedImages') || '[]');
         storedImages = Array.isArray(saved) ? saved : [];
-    } catch {
-        storedImages = [];
-    }
+    } catch { storedImages = []; }
 
     function toast(message, type = '') {
         const el = $('toast');
         el.textContent = message;
         el.className = 'toast show';
-
         if (type) el.classList.add(type);
-
         setTimeout(() => el.classList.remove('show'), 4500);
     }
-
     function progress(percent, message) {
-        progressBar.style.width =
-            Math.max(0, Math.min(100, percent)) + '%';
+        progressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
         progressText.textContent = message;
     }
-
     function setLoading(message) {
         loadingText.textContent = message;
         loadingState.style.display = 'block';
     }
-
     function resetGeneration() {
         isGenerating = false;
         generateBtn.disabled = false;
         loadingState.style.display = 'none';
-
-        if (pollTimer) {
-            clearTimeout(pollTimer);
-            pollTimer = null;
-        }
-
+        if (pollTimer) clearTimeout(pollTimer);
+        pollTimer = null;
         imageJobId = null;
     }
-
     function saveGalleryData() {
         try {
-            localStorage.setItem(
-                'aiGeneratedImages',
-                JSON.stringify(storedImages)
-            );
+            localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
         } catch (error) {
             toast('Gallery storage is full. Delete some old images.', 'error');
         }
     }
 
-    // Load actual AI Horde models instead of guessed model names.
     async function loadModels() {
         modelSelect.disabled = true;
-        modelSelect.innerHTML =
-            '<option value="">Loading available models...</option>';
-
-        $('model-help').textContent =
-            'Checking which models currently have workers...';
-
+        modelSelect.innerHTML = '<option value="">Loading available models...</option>';
+        $('model-help').textContent = 'Checking which models currently have workers...';
         try {
-            const response = await fetch(
-                API_BASE + '/status/models',
-                {
-                    headers: { 'Client-Agent': CLIENT_AGENT }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error('Could not retrieve the model list.');
-            }
-
+            const response = await fetch(API_BASE + '/status/models', {
+                headers: { 'Client-Agent': CLIENT_AGENT }
+            });
+            if (!response.ok) throw new Error('Could not retrieve the model list.');
             const models = await response.json();
-
-            if (!Array.isArray(models)) {
-                throw new Error('Unexpected model list response.');
-            }
-
-            const available = models
-                .filter(model =>
-                    model &&
-                    typeof model.name === 'string' &&
-                    Number(model.count || 0) > 0
-                )
-                .sort((a, b) =>
-                    Number(b.count || 0) - Number(a.count || 0)
-                );
-
+            if (!Array.isArray(models)) throw new Error('Unexpected model list response.');
+            const available = models.filter(m => m && typeof m.name === 'string' && Number(m.count || 0) > 0)
+                .sort((a, b) => Number(b.count || 0) - Number(a.count || 0));
             modelSelect.innerHTML = '';
-
             if (!available.length) {
-                modelSelect.innerHTML =
-                    '<option value="">No active workers found</option>';
-
-                $('model-help').textContent =
-                    'There are no currently available model workers. Try refreshing later.';
-
-                modelSelect.disabled = true;
+                modelSelect.innerHTML = '<option value="">No active workers found</option>';
+                $('model-help').textContent = 'No active workers are currently available. Refresh later.';
                 return;
             }
-
             available.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model.name;
-                option.textContent =
-                    `${model.name} (${model.count} workers)`;
+                option.textContent = `${model.name} (${model.count} workers)`;
                 modelSelect.appendChild(option);
             });
-
             modelSelect.disabled = false;
-
-            $('model-help').textContent =
-                `${available.length} models currently have available workers. Availability can change.`;
-
+            $('model-help').textContent = `${available.length} models currently have workers. Availability can change.`;
             toast('AI Horde models loaded.', 'success');
-
         } catch (error) {
-            console.error(error);
-
-            modelSelect.innerHTML =
-                '<option value="">Unable to load models</option>';
-
-            $('model-help').textContent =
-                'Could not connect to AI Horde. Check your connection and refresh.';
-
-            modelSelect.disabled = true;
+            console.error('Model list error:', error);
+            modelSelect.innerHTML = '<option value="">Unable to load models</option>';
+            $('model-help').textContent = 'Could not connect to AI Horde. Check your connection and refresh.';
             toast(error.message, 'error');
         }
     }
-
     $('refresh-models').addEventListener('click', loadModels);
 
     function checkPrompt(prompt) {
-        const lower = prompt.toLowerCase();
-
-        return PROHIBITED_TERMS.filter(term =>
-            lower.includes(term)
-        );
+        // Match prohibited phrases as words, not arbitrary substrings. This avoids
+        // false matches such as a blocked word embedded in a longer harmless word.
+        const normalized = prompt.toLowerCase().replace(/[‐‑‒–—]/g, '-');
+        return PROHIBITED_TERMS.filter(term => {
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return new RegExp('(^|[^a-z0-9])' + escaped + '([^a-z0-9]|$)', 'i').test(normalized);
+        });
     }
 
     function loadSafetyModel() {
         if (!nsfwModelPromise) {
             nsfwModelPromise = (async () => {
-                if (!window.tf || !window.nsfwjs) {
-                    throw new Error(
-                        'Safety libraries did not load. Check your connection.'
-                    );
-                }
-
+                if (!window.tf || !window.nsfwjs) throw new Error('Safety libraries did not load. Check your connection.');
                 await tf.ready();
-
-                return await nsfwjs.load(
-                    'https://cdn.jsdelivr.net/gh/infinitered/nsfwjs@master/models/mobilenet_v2/'
-                );
-            })().catch(error => {
-                nsfwModelPromise = null;
-                throw error;
-            });
+                return await nsfwjs.load('https://cdn.jsdelivr.net/gh/infinitered/nsfwjs@master/models/mobilenet_v2/');
+            })().catch(error => { nsfwModelPromise = null; throw error; });
         }
-
         return nsfwModelPromise;
     }
 
     async function moderateBlob(blob) {
-        if (!(blob instanceof Blob) ||
-            !blob.type.startsWith('image/')) {
-            throw new Error('The result is not a valid image.');
-        }
-
+        if (!(blob instanceof Blob) || !blob.type.startsWith('image/')) throw new Error('The result is not a valid image.');
         const model = await loadSafetyModel();
         const objectUrl = URL.createObjectURL(blob);
-
         try {
             const image = new Image();
             image.src = objectUrl;
-
             await new Promise((resolve, reject) => {
                 image.onload = resolve;
-                image.onerror = () =>
-                    reject(new Error('Could not open image for safety checking.'));
+                image.onerror = () => reject(new Error('Could not open image for safety checking.'));
             });
-
             const predictions = await model.classify(image);
-            const scores = {};
-
-            predictions.forEach(item => {
-                scores[item.className] = item.probability;
-            });
-
-            const flagged = Object.entries(NSFW_THRESHOLDS)
-                .filter(([name, threshold]) =>
-                    (scores[name] || 0) >= threshold
-                );
-
-            return {
-                safe: flagged.length === 0,
-                reason: flagged.map(item => item[0]).join(', ')
-            };
-
-        } finally {
-            URL.revokeObjectURL(objectUrl);
-        }
+            const scores = Object.fromEntries(predictions.map(p => [p.className, p.probability]));
+            const flagged = Object.entries(NSFW_THRESHOLDS).filter(([name, threshold]) => (scores[name] || 0) >= threshold);
+            return { safe: flagged.length === 0, reason: flagged.map(x => x[0]).join(', '), scores };
+        } finally { URL.revokeObjectURL(objectUrl); }
     }
 
     function renderGallery() {
         galleryGrid.innerHTML = '';
-
         if (!storedImages.length) {
             emptyGallery.style.display = 'block';
-            emptyGallery.textContent =
-                'Your generated images will appear here.';
+            emptyGallery.textContent = 'Your generated images will appear here.';
             return;
         }
-
         emptyGallery.style.display = 'none';
-
         storedImages.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'gallery-item';
-
             const img = document.createElement('img');
             img.className = 'gallery-img';
             img.alt = 'Saved generated image';
             img.src = item.url;
-
             const report = document.createElement('button');
-            report.className = 'report-btn';
-            report.type = 'button';
+            report.className = 'report-btn'; report.type = 'button';
             report.innerHTML = '<i class="fas fa-flag"></i>';
-
             const remove = document.createElement('button');
-            remove.className = 'delete-btn';
-            remove.type = 'button';
+            remove.className = 'delete-btn'; remove.type = 'button';
             remove.innerHTML = '<i class="fas fa-times"></i>';
-
             card.append(img, report, remove);
             galleryGrid.appendChild(card);
-
             img.addEventListener('click', () => openGalleryImage(index));
-
             remove.addEventListener('click', event => {
-                event.stopPropagation();
-                storedImages.splice(index, 1);
-                saveGalleryData();
-                renderGallery();
-                toast('Image deleted.', 'success');
+                event.stopPropagation(); storedImages.splice(index, 1);
+                saveGalleryData(); renderGallery(); toast('Image deleted.', 'success');
             });
-
             report.addEventListener('click', event => {
-                event.stopPropagation();
-                reportingIndex = index;
-                reportModal.style.display = 'flex';
+                event.stopPropagation(); reportingIndex = index; reportModal.style.display = 'flex';
             });
         });
     }
 
-    async function initializeGallery() {
-        if (!storedImages.length) {
-            renderGallery();
-            return;
-        }
-
-        emptyGallery.style.display = 'block';
-        emptyGallery.textContent =
-            'Checking saved images before displaying them...';
-
-        try {
-            await loadSafetyModel();
-
-            const approved = [];
-
-            for (const item of storedImages) {
-                const response = await fetch(item.url);
-
-                if (!response.ok) {
-                    throw new Error('Could not check a saved image.');
-                }
-
-                const result = await moderateBlob(await response.blob());
-
-                if (result.safe) {
-                    approved.push(item);
-                }
-            }
-
-            const removed = storedImages.length - approved.length;
-            storedImages = approved;
-            saveGalleryData();
-            renderGallery();
-
-            if (removed) {
-                toast(
-                    `${removed} saved image(s) did not pass the safety check.`,
-                    'warning'
-                );
-            }
-
-        } catch (error) {
-            console.error('Gallery scan failed:', error);
-
-            // Preserve existing data if the checker cannot load.
-            galleryGrid.innerHTML = '';
-            emptyGallery.style.display = 'block';
-            emptyGallery.textContent =
-                'Gallery is temporarily hidden because saved images could not be checked. Your saved data has not been deleted.';
-
-            toast('Gallery safety check unavailable.', 'error');
-        }
-    }
+    // Do not delete existing gallery entries merely because a classifier is
+    // unavailable or makes a false-positive prediction. Check an image again
+    // when the user opens it.
+    function initializeGallery() { renderGallery(); }
 
     async function openGalleryImage(index) {
         const item = storedImages[index];
         if (!item) return;
-
         try {
             const response = await fetch(item.url);
             if (!response.ok) throw new Error('Could not open saved image.');
-
             const blob = await response.blob();
             const result = await moderateBlob(blob);
-
-            if (!result.safe) {
-                throw new Error('This image did not pass the safety check.');
-            }
-
+            if (!result.safe) throw new Error('This image did not pass the safety check.');
             showResult(blob);
-
-        } catch (error) {
-            toast(error.message, 'error');
-        }
+        } catch (error) { toast(error.message, 'error'); }
     }
 
     function showResult(blob) {
         generatedImageBlob = blob;
-
-        if (currentImageUrl) {
-            URL.revokeObjectURL(currentImageUrl);
-        }
-
+        if (currentImageUrl) URL.revokeObjectURL(currentImageUrl);
         currentImageUrl = URL.createObjectURL(blob);
         resultImage.src = currentImageUrl;
         resultContainer.style.display = 'block';
-
         resultContainer.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function storeImage(blob, prompt) {
+    function storeImage(blob, prompt, modelName) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-
             reader.onload = () => {
                 storedImages.unshift({
-                    url: reader.result,
-                    timestamp: new Date().toISOString(),
-                    prompt,
-                    model: modelSelect.value,
-                    ratio: ratioSelect.value
+                    url: reader.result, timestamp: new Date().toISOString(), prompt,
+                    model: modelName, ratio: ratioSelect.value
                 });
-
                 storedImages = storedImages.slice(0, 30);
-                saveGalleryData();
-                renderGallery();
-                resolve();
+                saveGalleryData(); renderGallery(); resolve();
             };
-
-            reader.onerror = () =>
-                reject(new Error('Could not save image to gallery.'));
-
+            reader.onerror = () => reject(new Error('Could not save image to gallery.'));
             reader.readAsDataURL(blob);
         });
     }
 
-    // Submit an image generation request.
+    async function submitGeneration(modelName) {
+        setLoading(`Submitting request to ${modelName}...`);
+        progress(5, 'Connecting to AI Horde...');
+        const response = await fetch(API_BASE + '/generate/async', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': API_KEY,
+                'Client-Agent': CLIENT_AGENT
+            },
+            body: JSON.stringify({
+                prompt: activePrompt,
+                params: {
+                    width: activeDimensions.width, height: activeDimensions.height,
+                    steps: 25, sampler_name: 'k_euler_a', cfg_scale: 7, n: 1
+                },
+                models: [modelName],
+                nsfw: false,
+                censor_nsfw: true,
+                trusted_workers: true,
+                validated_backends: true,
+                r2: true
+            })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.error || `AI Horde returned error ${response.status}.`);
+        if (!data.id) throw new Error('AI Horde did not return a job ID.');
+        imageJobId = data.id;
+        generationStartedAt = Date.now();
+        setLoading('Waiting for an AI Horde worker...');
+        progress(10, `Request accepted using ${modelName}.`);
+        pollStatus();
+    }
+
+    async function retryWithAnotherModel(reason) {
+        const next = Array.from(modelSelect.options).find(o => o.value && !attemptedModels.includes(o.value));
+        if (!next || attemptedModels.length >= MAX_MODEL_RETRIES + 1) {
+            throw new Error(reason + ' No other untried active model is available. Try refreshing the model list and generating again.');
+        }
+        attemptedModels.push(next.value);
+        toast(`The result was rejected. Retrying with ${next.value}...`, 'warning');
+        await submitGeneration(next.value);
+    }
+
     generateBtn.addEventListener('click', async () => {
         if (isGenerating) return;
-
-        const prompt = promptInput.value.trim();
-
-        if (!prompt) {
-            toast('Please enter an image description.', 'error');
-            return;
-        }
-
-        const flagged = checkPrompt(prompt);
-
+        activePrompt = promptInput.value.trim();
+        if (!activePrompt) { toast('Please enter an image description.', 'error'); return; }
+        const flagged = checkPrompt(activePrompt);
         if (flagged.length) {
-            $('flagged-terms').textContent =
-                'Please remove: ' + flagged.join(', ');
-
-            warningModal.style.display = 'flex';
-            return;
+            $('flagged-terms').textContent = 'Please remove: ' + flagged.join(', ');
+            warningModal.style.display = 'flex'; return;
         }
-
-        if (!modelSelect.value || modelSelect.disabled) {
-            toast('Please select an available AI Horde model.', 'error');
-            return;
-        }
-
-        if (!API_KEY) {
-            toast('AI Horde API key is missing.', 'error');
-            return;
-        }
-
-        const [width, height] =
-            ratioSelect.value.split('x').map(Number);
-
+        if (!modelSelect.value || modelSelect.disabled) { toast('Please select an available AI Horde model.', 'error'); return; }
+        const [width, height] = ratioSelect.value.split('x').map(Number);
+        activeDimensions = { width, height };
         isGenerating = true;
         generateBtn.disabled = true;
-
+        attemptedModels = [modelSelect.value];
         resultContainer.style.display = 'none';
         generatedImageBlob = null;
-
-        setLoading('Submitting your image request...');
-        progress(5, 'Connecting to AI Horde...');
-
-        try {
-            const response = await fetch(
-                API_BASE + '/generate/async',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': API_KEY,
-                        'Client-Agent': CLIENT_AGENT
-                    },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        params: {
-                            width,
-                            height,
-                            steps: 25,
-                            sampler_name: 'k_euler_a',
-                            cfg_scale: 7,
-                            n: 1
-                        },
-                        models: [modelSelect.value],
-                        nsfw: false,
-                        censor_nsfw: true
-                    })
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    `AI Horde returned error ${response.status}.`
-                );
-            }
-
-            if (!data.id) {
-                throw new Error('AI Horde did not return a job ID.');
-            }
-
-            imageJobId = data.id;
-            generationStartedAt = Date.now();
-
-            setLoading('Waiting for an AI Horde worker...');
-            progress(10, 'Your request has been accepted.');
-
-            pollStatus();
-
-        } catch (error) {
-            console.error(error);
+        try { await submitGeneration(modelSelect.value); }
+        catch (error) {
+            console.error('Generation submission error:', error);
             toast(error.message || 'Could not start generation.', 'error');
             resetGeneration();
         }
@@ -1213,273 +991,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function pollStatus() {
         if (!imageJobId) return;
-
         if (Date.now() - generationStartedAt > 20 * 60 * 1000) {
-            toast('The queue is taking too long. Please try again later.', 'error');
-            resetGeneration();
-            return;
+            toast('The queue is taking too long. Please try again later.', 'error'); resetGeneration(); return;
         }
-
         try {
-            const response = await fetch(
-                API_BASE + '/generate/check/' +
-                encodeURIComponent(imageJobId),
-                {
-                    headers: { 'Client-Agent': CLIENT_AGENT }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error('Could not check generation status.');
-            }
-
+            const response = await fetch(API_BASE + '/generate/check/' + encodeURIComponent(imageJobId), {
+                headers: { 'Client-Agent': CLIENT_AGENT }
+            });
+            if (!response.ok) throw new Error('Could not check generation status.');
             const status = await response.json();
-
-            if (status.faulted) {
-                throw new Error(
-                    'AI Horde could not complete this request. Try another model.'
-                );
-            }
-
+            if (status.faulted) throw new Error('AI Horde could not complete this request. Try another model.');
             if (status.wait_time !== undefined) {
                 setLoading('Waiting in the generation queue...');
-
-                progress(
-                    15,
-                    `Queue position: ${status.queue_position ?? 'unknown'} · Estimated wait: ${Math.round(status.wait_time)} seconds`
-                );
+                progress(15, `Queue position: ${status.queue_position ?? 'unknown'} · Estimated wait: ${Math.round(status.wait_time)} seconds`);
             }
-
             if (status.processing > 0 && !status.done) {
-                const percent = Math.round(
-                    (Number(status.finished || 0) /
-                    Number(status.processing)) * 100
-                );
-
-                setLoading('Generating your image...');
-                progress(20 + percent * .65, `Generation: ${percent}%`);
+                const percent = Math.round((Number(status.finished || 0) / Number(status.processing)) * 100);
+                setLoading('Generating your image...'); progress(20 + percent * .65, `Generation: ${percent}%`);
             }
-
-            if (status.done) {
-                progress(90, 'Generation complete. Checking image...');
-                await fetchGeneratedImage();
-                return;
-            }
-
+            if (status.done) { progress(90, 'Generation complete. Checking image...'); await fetchGeneratedImage(); return; }
             pollTimer = setTimeout(pollStatus, 4000);
-
         } catch (error) {
-            console.error(error);
-            toast(error.message || 'Generation status error.', 'error');
-            resetGeneration();
+            console.error('Generation status error:', error);
+            toast(error.message || 'Generation status error.', 'error'); resetGeneration();
         }
     }
 
     async function fetchGeneratedImage() {
+        let retryStarted = false;
         try {
-            setLoading('Retrieving generated image...');
-            progress(92, 'Downloading image...');
-
-            const response = await fetch(
-                API_BASE + '/generate/status/' +
-                encodeURIComponent(imageJobId),
-                {
-                    headers: { 'Client-Agent': CLIENT_AGENT }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error('Could not retrieve generated image.');
-            }
-
+            setLoading('Retrieving generated image...'); progress(92, 'Downloading image...');
+            const response = await fetch(API_BASE + '/generate/status/' + encodeURIComponent(imageJobId), {
+                headers: { 'Client-Agent': CLIENT_AGENT }
+            });
+            if (!response.ok) throw new Error('Could not retrieve generated image.');
             const status = await response.json();
-
-            if (!status.generations || !status.generations.length) {
-                throw new Error('AI Horde returned no image.');
-            }
-
+            if (!status.generations || !status.generations.length) throw new Error('AI Horde returned no image.');
             const generation = status.generations[0];
-
             if (generation.censored === true) {
-                throw new Error(
-                    'AI Horde censored this result. Try a different prompt or model.'
-                );
+                await retryWithAnotherModel('AI Horde marked this result as censored.');
+                retryStarted = true;
+                return;
             }
-
-            if (!generation.img) {
-                throw new Error('The image URL was missing.');
+            if (!generation.img) throw new Error('The image data was missing.');
+            let blob;
+            if (generation.img.startsWith('data:image/')) {
+                const imageResponse = await fetch(generation.img);
+                blob = await imageResponse.blob();
+            } else if (/^[A-Za-z0-9+/]+=*$/.test(generation.img) && generation.img.length > 1000) {
+                const binary = atob(generation.img);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                blob = new Blob([bytes], { type: 'image/webp' });
+            } else {
+                const imageResponse = await fetch(generation.img);
+                if (!imageResponse.ok) throw new Error('Could not download generated image.');
+                blob = await imageResponse.blob();
             }
-
-            const imageResponse = await fetch(generation.img);
-
-            if (!imageResponse.ok) {
-                throw new Error('Could not download generated image.');
-            }
-
-            const blob = await imageResponse.blob();
-
-            setLoading('Checking image safety...');
-            progress(96, 'Scanning image before display...');
-
+            if (!blob || !blob.type.startsWith('image/')) throw new Error('AI Horde did not return a readable image.');
+            setLoading('Checking image safety...'); progress(96, 'Scanning image before display...');
             const moderation = await moderateBlob(blob);
-
             if (!moderation.safe) {
-                throw new Error(
-                    'This image was blocked because it may contain inappropriate content.'
-                );
+                await retryWithAnotherModel('The browser safety checker flagged this result (' + moderation.reason + ').');
+                retryStarted = true;
+                return;
             }
-
             showResult(blob);
-            await storeImage(blob, promptInput.value.trim());
-
+            await storeImage(blob, activePrompt, generation.model || attemptedModels[attemptedModels.length - 1]);
             progress(100, 'Image generated and checked.');
             toast('Image generated successfully!', 'success');
-
         } catch (error) {
             console.error('Image processing error:', error);
-
             generatedImageBlob = null;
             resultImage.removeAttribute('src');
             resultContainer.style.display = 'none';
-
-            toast(
-                error.message ||
-                'The image could not be verified and was not displayed.',
-                'error'
-            );
-
-        } finally {
-            resetGeneration();
-        }
+            toast(error.message || 'The image could not be verified and was not displayed.', 'error');
+        } finally { if (!retryStarted) resetGeneration(); }
     }
 
-    // Download only a verified image.
     downloadBtn.addEventListener('click', () => {
-        if (!generatedImageBlob) {
-            toast('No verified image available.', 'error');
-            return;
-        }
-
+        if (!generatedImageBlob) { toast('No verified image available.', 'error'); return; }
         const url = URL.createObjectURL(generatedImageBlob);
         const link = document.createElement('a');
-
         link.href = url;
-        link.download = 'imagera-' +
-            new Date().toISOString().replace(/[:.]/g, '-') +
-            '.png';
-
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
+        link.download = 'imagera-' + new Date().toISOString().replace(/[:.]/g, '-') + '.webp';
+        document.body.appendChild(link); link.click(); link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         toast('Download started.', 'success');
     });
 
-    // Recheck before saving.
     saveBtn.addEventListener('click', async () => {
-        if (!generatedImageBlob) {
-            toast('No verified image available.', 'error');
-            return;
-        }
-
+        if (!generatedImageBlob) { toast('No verified image available.', 'error'); return; }
         try {
             const result = await moderateBlob(generatedImageBlob);
-
-            if (!result.safe) {
-                throw new Error('Image did not pass safety checking.');
-            }
-
-            await storeImage(
-                generatedImageBlob,
-                promptInput.value.trim()
-            );
-
+            if (!result.safe) throw new Error('Image did not pass safety checking.');
+            await storeImage(generatedImageBlob, activePrompt || promptInput.value.trim(), modelSelect.value);
             toast('Image saved to your gallery.', 'success');
-
-        } catch (error) {
-            toast(error.message, 'error');
-        }
+        } catch (error) { toast(error.message, 'error'); }
     });
 
     deleteBtn.addEventListener('click', () => {
-        generatedImageBlob = null;
-        resultImage.removeAttribute('src');
-
-        if (currentImageUrl) {
-            URL.revokeObjectURL(currentImageUrl);
-            currentImageUrl = null;
-        }
-
-        resultContainer.style.display = 'none';
-        toast('Current image removed.', 'success');
+        generatedImageBlob = null; resultImage.removeAttribute('src');
+        if (currentImageUrl) { URL.revokeObjectURL(currentImageUrl); currentImageUrl = null; }
+        resultContainer.style.display = 'none'; toast('Current image removed.', 'success');
     });
 
-    // Report interface. This page does not have a report server.
-    $('cancel-report').addEventListener('click', () => {
-        reportModal.style.display = 'none';
-        reportingIndex = null;
-    });
-
+    $('cancel-report').addEventListener('click', () => { reportModal.style.display = 'none'; reportingIndex = null; });
     $('submit-report').addEventListener('click', () => {
-        if (reportingIndex === null ||
-            !storedImages[reportingIndex]) return;
-
-        const reason = document.querySelector(
-            'input[name="report-reason"]:checked'
-        );
-
-        console.log('Report details:', {
-            reason: reason ? reason.value : 'other',
-            details: $('report-details').value,
+        if (reportingIndex === null || !storedImages[reportingIndex]) return;
+        const reason = document.querySelector('input[name="report-reason"]:checked');
+        console.log('Report details (local only):', {
+            reason: reason ? reason.value : 'other', details: $('report-details').value,
             image: storedImages[reportingIndex]
         });
-
-        reportModal.style.display = 'none';
-        reportingIndex = null;
-        $('report-details').value = '';
-
-        toast(
-            'Report information recorded locally only. It has not been sent to a server.',
-            'warning'
-        );
+        reportModal.style.display = 'none'; reportingIndex = null; $('report-details').value = '';
+        toast('Report information recorded locally only; it was not sent to a server.', 'warning');
     });
-
-    $('cancel-generate').addEventListener('click', () => {
-        warningModal.style.display = 'none';
-    });
-
-    $('show-terms').addEventListener('click', () => {
-        termsModal.style.display = 'flex';
-    });
-
-    $('accept-terms').addEventListener('click', () => {
-        termsModal.style.display = 'none';
-    });
-
+    $('cancel-generate').addEventListener('click', () => { warningModal.style.display = 'none'; });
+    $('show-terms').addEventListener('click', () => { termsModal.style.display = 'flex'; });
+    $('accept-terms').addEventListener('click', () => { termsModal.style.display = 'none'; });
     window.addEventListener('click', event => {
-        if (event.target === warningModal) {
-            warningModal.style.display = 'none';
-        }
-
-        if (event.target === reportModal) {
-            reportModal.style.display = 'none';
-            reportingIndex = null;
-        }
-
-        if (event.target === termsModal) {
-            termsModal.style.display = 'none';
-        }
+        if (event.target === warningModal) warningModal.style.display = 'none';
+        if (event.target === reportModal) { reportModal.style.display = 'none'; reportingIndex = null; }
+        if (event.target === termsModal) termsModal.style.display = 'none';
     });
+    $('back-button').addEventListener('click', () => { window.location.href = 'Ai media.html'; });
 
-    $('back-button').addEventListener('click', () => {
-        window.location.href = 'Ai media.html';
-    });
-
-    // Initialise app.
     loadModels();
     initializeGallery();
 });
+
 </script>
 
 </body>
