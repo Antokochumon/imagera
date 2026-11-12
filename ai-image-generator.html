@@ -837,7 +837,13 @@
                             throw new Error('Image safety model libraries could not be loaded.');
                         }
                         await tf.ready();
-                        return await nsfwjs.load('https://nsfwjs.com/model/');
+                        // Use jsDelivr's CORS-enabled mirror of the official NSFWJS
+                        // MobileNetV2 model. nsfwjs.com currently does not reliably
+                        // return Access-Control-Allow-Origin for GitHub Pages clients.
+                        // Keep the trailing slash: NSFWJS appends model.json and shard files.
+                        return await nsfwjs.load(
+                            'https://cdn.jsdelivr.net/gh/infinitered/nsfwjs@master/models/mobilenet_v2/'
+                        );
                     })().catch(error => {
                         nsfwModelPromise = null;
                         throw error;
