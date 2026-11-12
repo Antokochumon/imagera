@@ -1,1377 +1,1486 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<script>(function(s){s.dataset.zone='10011142',s.src='https://forfrogadiertor.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-    <style>
-        :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --secondary: #00b894;
-            --dark: #2d3436;
-            --light: #f5f6fa;
-            --error: #d63031;
-            --warning: #fdcb6e;
-            --card-bg: #ffffff;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--light);
-            color: var(--dark);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .tagline {
-            color: var(--dark);
-            opacity: 0.8;
-            font-size: 1.1rem;
-        }
-
-        .generator-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-title i {
-            font-size: 1.8rem;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        textarea, select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        textarea:focus, select:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            background-color: #b2b2b2;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary);
-        }
-
-        .loading-state {
-            display: none;
-            text-align: center;
-            margin: 25px 0;
-        }
-
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .progress-container {
-            width: 100%;
-            background-color: #f1f1f1;
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 10px;
-            background-color: var(--primary);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .result-container {
-            display: none;
-            margin-top: 30px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-image {
-            width: 100%;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-            max-height: 70vh;
-            object-fit: contain;
-        }
-
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .gallery-section {
-            margin-top: 40px;
-        }
-
-        .gallery-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .gallery-item {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: all 0.3s;
-            aspect-ratio: 1/1;
-        }
-
-        .gallery-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .gallery-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--error);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .report-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: var(--warning);
-            color: var(--dark);
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .gallery-item:hover .delete-btn,
-        .gallery-item:hover .report-btn {
-            opacity: 1;
-        }
-
-        .empty-gallery {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--dark);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            max-width: 90%;
-        }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        .toast.error {
-            background-color: var(--error);
-        }
-
-        .toast.success {
-            background-color: var(--secondary);
-        }
-
-        .toast.warning {
-            background-color: var(--warning);
-            color: var(--dark);
-        }
-
-        /* Content Warning Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: var(--shadow);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--error);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .modal-btn-cancel {
-            background-color: #f1f1f1;
-            color: var(--dark);
-            border: none;
-        }
-
-        .modal-btn-confirm {
-            background-color: var(--error);
-            color: white;
-            border: none;
-        }
-
-        /* Report Modal */
-        .report-modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: var(--shadow);
-        }
-
-        .report-options {
-            margin: 20px 0;
-        }
-
-        .report-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .report-option:hover {
-            background-color: #f5f5f5;
-        }
-
-        .report-option input {
-            margin-right: 10px;
-        }
-
-        .report-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-top: 10px;
-            resize: vertical;
-        }
-
-        /* Terms Modal */
-        .terms-modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 70vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-        }
-
-        .terms-content {
-            margin: 15px 0;
-            line-height: 1.6;
-        }
-
-        .terms-content h3 {
-            margin: 15px 0 8px;
-            color: var(--primary);
-        }
-
-        .terms-content ul {
-            padding-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .logo {
-                font-size: 2rem;
-            }
-
-            .tagline {
-                font-size: 1rem;
-            }
-
-            .generator-card {
-                padding: 20px;
-            }
-
-            .gallery-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-buttons {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .card-title {
-                font-size: 1.3rem;
-            }
-
-            textarea {
-                min-height: 120px;
-            }
-
-            .gallery-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-            z-index: 10;
-        }
-
-        .back-button:hover {
-            background-color: var(--primary-light);
-            transform: translateX(-3px);
-        }
-
-        @media (max-width: 768px) {
-            .back-button {
-                top: 15px;
-                left: 15px;
-                padding: 6px 12px;
-                font-size: 0.8rem;
-            }
-        }
-
-        .terms-link {
-            color: var(--primary);
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 15px;
-            display: inline-block;
-        }
-
-        .warning-banner {
-            background-color: var(--warning);
-            color: var(--dark);
-            padding: 12px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .warning-banner i {
-            font-size: 1.2rem;
-        }
-    </style>
-
-    <!-- Browser-side NSFW image moderation. No API key or account required. -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imagera - AI Image Generator</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
+
+<style>
+:root {
+    --primary: #6c5ce7;
+    --primary-light: #a29bfe;
+    --secondary: #00b894;
+    --dark: #2d3436;
+    --light: #f5f6fa;
+    --error: #d63031;
+    --warning: #fdcb6e;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 20px rgba(0,0,0,.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: var(--light);
+    color: var(--dark);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 55px 0 20px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.tagline {
+    opacity: .8;
+    font-size: 1.1rem;
+}
+
+.generator-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+textarea, select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: white;
+}
+
+textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+textarea:focus, select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108,92,231,.2);
+}
+
+.btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: .3s;
+}
+
+.btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: var(--secondary);
+}
+
+.loading-state {
+    display: none;
+    text-align: center;
+    margin: 25px 0;
+}
+
+.spinner {
+    border: 4px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--primary);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.progress-container {
+    width: 100%;
+    background: #eee;
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 10px;
+    background: var(--primary);
+    width: 0%;
+    transition: width .3s;
+}
+
+.result-container {
+    display: none;
+    margin-top: 30px;
+    animation: fadeIn .5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-image {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.gallery-section {
+    margin-top: 40px;
+}
+
+.gallery-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+    gap: 20px;
+}
+
+.gallery-item {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    aspect-ratio: 1/1;
+}
+
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.delete-btn, .report-btn {
+    position: absolute;
+    top: 10px;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+.delete-btn {
+    right: 10px;
+    background: var(--error);
+    color: white;
+}
+
+.report-btn {
+    left: 10px;
+    background: var(--warning);
+    color: var(--dark);
+}
+
+.gallery-item:hover .delete-btn,
+.gallery-item:hover .report-btn {
+    opacity: 1;
+}
+
+.empty-gallery {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    z-index: 3000;
+    opacity: 0;
+    transition: opacity .3s;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show { opacity: 1; }
+.toast.error { background: var(--error); }
+.toast.success { background: var(--secondary); }
+.toast.warning { background: var(--warning); color: var(--dark); }
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    max-width: 550px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--error);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal-btn-cancel {
+    background: #eee;
+    color: var(--dark);
+    border: none;
+}
+
+.modal-btn-confirm {
+    background: var(--error);
+    color: white;
+    border: none;
+}
+
+.report-option {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+    gap: 10px;
+}
+
+.report-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.terms-content {
+    margin: 15px 0;
+    line-height: 1.6;
+}
+
+.terms-content h3 {
+    margin: 15px 0 8px;
+    color: var(--primary);
+}
+
+.terms-content ul {
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.terms-link {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.warning-banner {
+    background: var(--warning);
+    color: var(--dark);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.model-help {
+    color: #666;
+    font-size: .85rem;
+    margin-top: 7px;
+}
+
+@media(max-width:768px) {
+    .container { padding: 15px; }
+    .logo { font-size: 2rem; }
+    .generator-card { padding: 20px; }
+    .gallery-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        gap: 10px;
+    }
+    .action-buttons { grid-template-columns: 1fr; }
+    .modal-buttons { flex-direction: column; }
+    .delete-btn, .report-btn { opacity: 1; }
+}
+
+@media(max-width:480px) {
+    .card-title { font-size: 1.3rem; }
+    textarea { min-height: 120px; }
+}
+</style>
 </head>
+
 <body>
-    <button id="back-button" class="back-button" onclick="window.location.href='Ai media.html'">
-        <i class="fas fa-arrow-left"></i> Back
-    </button>      
-    
-    <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-magic"></i> AI Image Generator
-            </div>
-            <div class="tagline">
-                Transform your ideas into stunning visuals with AI
-            </div>
-        </header>
 
-        <div class="warning-banner">
-            <i class="fas fa-exclamation-triangle"></i>
-            <div>
-                <strong>Content Guidelines:</strong> This app prohibits the generation of explicit, violent, or harmful content. 
-                All images are automatically filtered and users can report inappropriate content.
-            </div>
-        </div>
+<button id="back-button" class="back-button">
+    <i class="fas fa-arrow-left"></i> Back
+</button>
 
-        <div class="generator-card">
-            <h2 class="card-title">
-                <i class="fas fa-paint-brush"></i> Create New Image
-            </h2>
+<div class="container">
 
-            <div class="input-group">
-                <label for="image-prompt">Describe your image</label>
-                <textarea id="image-prompt" placeholder="Example: A majestic lion standing on a rock at sunset, digital art style, highly detailed, vibrant colors"></textarea>
-                <small style="color: #666; display: block; margin-top: 5px;">Avoid descriptions of explicit, violent, or harmful content.</small>
-            </div>
-            
-            <div class="input-group">
-                <label for="image-style">Art Style</label>
-                <select id="image-style">
-                    <option value="stable_diffusion">Stable Diffusion (Default)</option>
-                    <option value="Deliberate">Deliberate - Highly Detailed</option>
-                    <option value="DreamShaper">DreamShaper - Fantasy Art</option>
-                    <option value="Realistic">Realistic Vision</option>
-                    <option value="Arcane">Arcane Style</option>
-                    <option value="Ghibli">Studio Ghibli Style</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label for="image-ratio">Aspect Ratio</label>
-                <select id="image-ratio">
-                    <option value="512x512">Square (512×512)</option>
-                    <option value="768x512">Landscape (768×512)</option>
-                    <option value="512x768">Portrait (512×768)</option>
-                    <option value="1024x768">Wide (1024×768)</option>
-                </select>
-            </div>
-            
-            <button id="generate-btn" class="btn">
-                <i class="fas fa-sparkles"></i> Generate Image
-            </button>
-            
-            <div class="loading-state" id="loading-state">
-                <div class="spinner"></div>
-                <p id="loading-text">Initializing image generation...</p>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
-                </div>
-                <p id="progress-text">Preparing request...</p>
-            </div>
-            
-            <div class="result-container" id="result-container">
-                <h3 class="card-title">
-                    <i class="fas fa-image"></i> Your Generated Image
-                </h3>
-                <img id="result-image" class="result-image" src="" alt="Generated image">
-                <div class="action-buttons">
-                    <button id="download-btn" class="btn btn-secondary">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button id="save-btn" class="btn">
-                        <i class="fas fa-save"></i> Save
-                    </button>
-                    <button id="delete-btn" class="btn" style="background-color: var(--error);">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="gallery-section">
-            <h3 class="gallery-title">
-                <i class="fas fa-images"></i> Your Gallery
-            </h3>
-            
-            <div class="gallery-grid" id="gallery-grid">
-                <!-- Images will be added here dynamically -->
-            </div>
-            
-            <div class="empty-gallery" id="empty-gallery">
-                <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                <p>Your generated images will appear here</p>
-            </div>
-        </div>
-
-        <div class="terms-link" id="show-terms">
-            <i class="fas fa-file-alt"></i> View Content Guidelines and Terms of Use
-        </div>
+<header>
+    <div class="logo">
+        <i class="fas fa-magic"></i> Imagera
     </div>
-
-    <div class="toast" id="toast"></div>
-
-    <!-- Content Warning Modal -->
-    <div class="modal" id="warning-modal">
-        <div class="modal-content">
-            <h3 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Content Warning</h3>
-            <p>Your prompt may contain terms that could generate inappropriate content. Please revise your description to comply with our content guidelines.</p>
-            <p id="flagged-terms" style="font-weight: bold; color: var(--error); margin: 10px 0;"></p>
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" id="cancel-generate">Cancel</button>
-                <button class="modal-btn modal-btn-confirm" id="confirm-generate">Generate Anyway</button>
-            </div>
-        </div>
+    <div class="tagline">
+        Transform your ideas into stunning visuals with AI
     </div>
+</header>
 
-    <!-- Report Modal -->
-    <div class="modal" id="report-modal">
-        <div class="report-modal-content">
-            <h3 class="modal-title"><i class="fas fa-flag"></i> Report Content</h3>
-            <p>Please select the reason for reporting this image:</p>
-            
-            <div class="report-options">
-                <label class="report-option">
-                    <input type="radio" name="report-reason" value="explicit" checked> 
-                    Explicit/Sexual Content
-                </label>
-                <label class="report-option">
-                    <input type="radio" name="report-reason" value="violence"> 
-                    Violence/Harm
-                </label>
-                <label class="report-option">
-                    <input type="radio" name="report-reason" value="hate"> 
-                    Hate Speech/Symbols
-                </label>
-                <label class="report-option">
-                    <input type="radio" name="report-reason" value="other"> 
-                    Other (please specify)
-                </label>
-            </div>
-            
-            <textarea class="report-textarea" id="report-details" placeholder="Additional details (optional)"></textarea>
-            
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" id="cancel-report">Cancel</button>
-                <button class="modal-btn modal-btn-confirm" id="submit-report">Submit Report</button>
-            </div>
-        </div>
+<div class="warning-banner">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div>
+        <strong>Content Guidelines:</strong>
+        Explicit, sexual, violent and harmful content is not allowed.
+        Generated images are checked before they are displayed.
     </div>
-
-    <!-- Terms Modal -->
-    <div class="modal" id="terms-modal">
-        <div class="terms-modal-content">
-            <h3 class="modal-title"><i class="fas fa-file-alt"></i> Content Guidelines</h3>
-            
-            <div class="terms-content">
-                <h3>Prohibited Content</h3>
-                <p>This app does not allow the generation of the following content:</p>
-                <ul>
-                    <li>Sexually explicit or suggestive content</li>
-                    <li>Nudity or partially clothed figures in suggestive poses</li>
-                    <li>Violent, gory, or harmful imagery</li>
-                    <li>Hate speech, symbols, or discriminatory content</li>
-                    <li>Illegal activities or substances</li>
-                    <li>Copyrighted material you don't have rights to</li>
-                </ul>
-                
-                <h3>User Responsibilities</h3>
-                <ul>
-                    <li>You must not attempt to bypass content filters</li>
-                    <li>You must report any inappropriate content you encounter</li>
-                    <li>You are responsible for the prompts you submit</li>
-                </ul>
-                
-                <h3>Content Moderation</h3>
-                <p>All generated content is automatically filtered for policy violations. Users can report content that slips through these filters. Repeated violations may result in account suspension.</p>
-                
-                <h3>AI Limitations</h3>
-                <p>AI-generated content may sometimes produce unexpected results. Please use the reporting feature if you encounter inappropriate content.</p>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-confirm" id="accept-terms">I Understand</button>
-            </div>
-        </div>
-    </div>
-
-    
-    
-    
-    <div style="text-align:center; margin: 30px 0; height: 20px;">
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'b7ef4e5abf432a14f5a08f62a4933234',
-		'format' : 'iframe',
-		'height' : 20,
-		'width' : 320,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/b7ef4e5abf432a14f5a08f62a4933234/invoke.js"></script>
 </div>
-    
-    
-    
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const generateBtn = document.getElementById('generate-btn');
-            const loadingState = document.getElementById('loading-state');
-            const resultContainer = document.getElementById('result-container');
-            const resultImage = document.getElementById('result-image');
-            const downloadBtn = document.getElementById('download-btn');
-            const saveBtn = document.getElementById('save-btn');
-            const deleteBtn = document.getElementById('delete-btn');
-            const progressBar = document.getElementById('progress-bar');
-            const loadingText = document.getElementById('loading-text');
-            const progressText = document.getElementById('progress-text');
-            const galleryGrid = document.getElementById('gallery-grid');
-            const emptyGallery = document.getElementById('empty-gallery');
-            const toast = document.getElementById('toast');
-            const warningModal = document.getElementById('warning-modal');
-            const flaggedTermsEl = document.getElementById('flagged-terms');
-            const cancelGenerateBtn = document.getElementById('cancel-generate');
-            const confirmGenerateBtn = document.getElementById('confirm-generate');
-            const reportModal = document.getElementById('report-modal');
-            const cancelReportBtn = document.getElementById('cancel-report');
-            const submitReportBtn = document.getElementById('submit-report');
-            const termsModal = document.getElementById('terms-modal');
-            const showTermsBtn = document.getElementById('show-terms');
-            const acceptTermsBtn = document.getElementById('accept-terms');
 
-            // API Configuration
-            const STABLE_HORDE_API_KEY = 'Bi-aq4T72lBfF4UJjsMzNg';
-            const IMAGE_API_ENDPOINT = 'https://stablehorde.net/api/v2/generate/async';
-            const CHECK_STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/check/';
-            const STATUS_ENDPOINT = 'https://stablehorde.net/api/v2/generate/status/';
+<div class="generator-card">
 
-            // Prohibited terms list (simplified example - in production, use a more comprehensive list)
-            const PROHIBITED_TERMS = [
-                'nude', 'naked', 'sex', 'sexual', 'porn', 'pornography', 'explicit', 
-                'hentai', 'nsfw', 'fuck', 'ass', 'boobs', 'breasts', 'penis', 'vagina',
-                'rape', 'violent', 'gore', 'blood', 'kill', 'murder', 'hitler', 'nazi',
-                'racist', 'terrorist', 'child porn', 'cp', 'loli', 'shota'
-            ];
+    <h2 class="card-title">
+        <i class="fas fa-paint-brush"></i> Create New Image
+    </h2>
 
-            // App State
-            let generatedImageBlob = null;
-            let imageJobId = null;
-            let imageCheckInterval = null;
-            let storedImages = JSON.parse(localStorage.getItem('aiGeneratedImages') || '[]');
+    <div class="input-group">
+        <label for="image-prompt">Describe your image</label>
+        <textarea id="image-prompt"
+            placeholder="Example: A majestic lion standing on a rock at sunset, digital art style, highly detailed, vibrant colours"></textarea>
+        <small class="model-help">
+            Describe a safe image. Do not include explicit or harmful content.
+        </small>
+    </div>
 
-            let currentlyReportingIndex = null;
+    <div class="input-group">
+        <label for="image-style">AI Horde Model</label>
+        <select id="image-style" disabled>
+            <option>Loading available models...</option>
+        </select>
+        <div class="model-help" id="model-help">
+            Loading models and checking worker availability...
+        </div>
+        <button type="button" id="refresh-models"
+            class="btn" style="margin-top:10px;">
+            <i class="fas fa-sync-alt"></i> Refresh Models
+        </button>
+    </div>
 
-            // NSFW moderation runs locally in the user's browser using the open-source
-            // NSFWJS classifier. It requires no API key or user account.
-            // Fail closed: if the model cannot load or classify an image, do not show it.
-            let nsfwModelPromise = null;
-            const NSFW_THRESHOLDS = {
-                Porn: 0.15,
-                Hentai: 0.15,
-                Sexy: 0.35
+    <div class="input-group">
+        <label for="image-ratio">Aspect Ratio</label>
+        <select id="image-ratio">
+            <option value="512x512">Square (512 × 512)</option>
+            <option value="768x512">Landscape (768 × 512)</option>
+            <option value="512x768">Portrait (512 × 768)</option>
+            <option value="1024x768">Wide (1024 × 768)</option>
+        </select>
+    </div>
+
+    <button id="generate-btn" class="btn">
+        <i class="fas fa-sparkles"></i> Generate Image
+    </button>
+
+    <div class="loading-state" id="loading-state">
+        <div class="spinner"></div>
+        <p id="loading-text">Connecting to AI Horde...</p>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p id="progress-text">Preparing request...</p>
+    </div>
+
+    <div class="result-container" id="result-container">
+        <h3 class="card-title">
+            <i class="fas fa-image"></i> Your Generated Image
+        </h3>
+
+        <img id="result-image" class="result-image"
+             alt="Generated image">
+
+        <div class="action-buttons">
+            <button id="download-btn" class="btn btn-secondary">
+                <i class="fas fa-download"></i> Download
+            </button>
+
+            <button id="save-btn" class="btn">
+                <i class="fas fa-save"></i> Save
+            </button>
+
+            <button id="delete-btn" class="btn"
+                style="background:var(--error);">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<div class="gallery-section">
+    <h3 class="gallery-title">
+        <i class="fas fa-images"></i> Your Gallery
+    </h3>
+
+    <div class="gallery-grid" id="gallery-grid"></div>
+
+    <div class="empty-gallery" id="empty-gallery">
+        <i class="fas fa-image" style="font-size:2rem;"></i>
+        <p>Your generated images will appear here.</p>
+    </div>
+</div>
+
+<div class="terms-link" id="show-terms">
+    <i class="fas fa-file-alt"></i>
+    View Content Guidelines and Terms of Use
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Prompt warning -->
+<div class="modal" id="warning-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Content Warning
+        </h3>
+        <p>
+            Your prompt contains terms that are not allowed.
+            Please change your description.
+        </p>
+        <p id="flagged-terms"
+           style="font-weight:bold;color:var(--error);margin:12px 0;"></p>
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-cancel"
+                id="cancel-generate">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Report modal -->
+<div class="modal" id="report-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">
+            <i class="fas fa-flag"></i> Report Content
+        </h3>
+
+        <p>Select a reason for reporting this image:</p>
+
+        <div style="margin:20px 0;">
+            <label class="report-option">
+                <input type="radio" name="report-reason"
+                    value="explicit" checked>
+                Explicit or sexual content
+            </label>
+
+            <label class="report-option">
+                <input type="radio" name="report-reason"
+                    value="violence">
+                Violence or harm
+            </label>
+
+            <label class="report-option">
+                <input type="radio" name="report-reason"
+                    value="hate">
+                Hate speech or symbols
+            </label>
+
+            <label class="report-option">
+                <input type="radio" name="report-reason"
+                    value="other">
+                Other
+            </label>
+        </div>
+
+        <textarea id="report-details" class="report-textarea"
+            placeholder="Additional details (optional)"></textarea>
+
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-cancel"
+                id="cancel-report">Cancel</button>
+
+            <button class="modal-btn modal-btn-confirm"
+                id="submit-report">Submit Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- Terms modal -->
+<div class="modal" id="terms-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">
+            <i class="fas fa-file-alt"></i> Content Guidelines
+        </h3>
+
+        <div class="terms-content">
+            <h3>Prohibited Content</h3>
+            <ul>
+                <li>Sexually explicit or suggestive content.</li>
+                <li>Nudity or sexualised imagery.</li>
+                <li>Violent, graphic or harmful imagery.</li>
+                <li>Hate speech and discriminatory content.</li>
+                <li>Illegal activities.</li>
+                <li>Content involving the sexual exploitation of minors.</li>
+            </ul>
+
+            <h3>User Responsibilities</h3>
+            <ul>
+                <li>Do not attempt to bypass content filters.</li>
+                <li>Use the app responsibly.</li>
+                <li>Report inappropriate content.</li>
+            </ul>
+
+            <h3>Content Moderation</h3>
+            <p>
+                Images are checked by an automated browser-side classifier.
+                Automated checks can make mistakes and cannot guarantee
+                that every unsafe image will be detected.
+            </p>
+
+            <h3>AI Limitations</h3>
+            <p>
+                AI-generated results can be unexpected. Do not use this app
+                to create or distribute harmful or prohibited material.
+            </p>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="modal-btn modal-btn-confirm"
+                id="accept-terms">I Understand</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const $ = id => document.getElementById(id);
+
+    const generateBtn = $('generate-btn');
+    const modelSelect = $('image-style');
+    const promptInput = $('image-prompt');
+    const ratioSelect = $('image-ratio');
+
+    const loadingState = $('loading-state');
+    const loadingText = $('loading-text');
+    const progressText = $('progress-text');
+    const progressBar = $('progress-bar');
+
+    const resultContainer = $('result-container');
+    const resultImage = $('result-image');
+    const downloadBtn = $('download-btn');
+    const saveBtn = $('save-btn');
+    const deleteBtn = $('delete-btn');
+
+    const galleryGrid = $('gallery-grid');
+    const emptyGallery = $('empty-gallery');
+
+    const warningModal = $('warning-modal');
+    const reportModal = $('report-modal');
+    const termsModal = $('terms-modal');
+
+    const API_BASE = 'https://stablehorde.net/api/v2';
+    const API_KEY = 'Bi-aq4T72lBfF4UJjsMzNg';
+    const CLIENT_AGENT = 'Imagera:1.0:antokochumon.github.io';
+
+    const PROHIBITED_TERMS = [
+        'pornography', 'pornographic', 'hentai',
+        'nude', 'nudity', 'naked', 'sexual',
+        'sexually explicit', 'explicit sexual',
+        'child porn', 'child pornography',
+        'underage sexual', 'sexual abuse',
+        'rape', 'bestiality', 'graphic violence'
+    ];
+
+    const NSFW_THRESHOLDS = {
+        Porn: 0.15,
+        Hentai: 0.15,
+        Sexy: 0.35
+    };
+
+    let storedImages = [];
+    let generatedImageBlob = null;
+    let currentImageUrl = null;
+    let imageJobId = null;
+    let pollTimer = null;
+    let generationStartedAt = 0;
+    let isGenerating = false;
+    let nsfwModelPromise = null;
+    let reportingIndex = null;
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem('aiGeneratedImages') || '[]'
+        );
+        storedImages = Array.isArray(saved) ? saved : [];
+    } catch {
+        storedImages = [];
+    }
+
+    function toast(message, type = '') {
+        const el = $('toast');
+        el.textContent = message;
+        el.className = 'toast show';
+
+        if (type) el.classList.add(type);
+
+        setTimeout(() => el.classList.remove('show'), 4500);
+    }
+
+    function progress(percent, message) {
+        progressBar.style.width =
+            Math.max(0, Math.min(100, percent)) + '%';
+        progressText.textContent = message;
+    }
+
+    function setLoading(message) {
+        loadingText.textContent = message;
+        loadingState.style.display = 'block';
+    }
+
+    function resetGeneration() {
+        isGenerating = false;
+        generateBtn.disabled = false;
+        loadingState.style.display = 'none';
+
+        if (pollTimer) {
+            clearTimeout(pollTimer);
+            pollTimer = null;
+        }
+
+        imageJobId = null;
+    }
+
+    function saveGalleryData() {
+        try {
+            localStorage.setItem(
+                'aiGeneratedImages',
+                JSON.stringify(storedImages)
+            );
+        } catch (error) {
+            toast('Gallery storage is full. Delete some old images.', 'error');
+        }
+    }
+
+    // Load actual AI Horde models instead of guessed model names.
+    async function loadModels() {
+        modelSelect.disabled = true;
+        modelSelect.innerHTML =
+            '<option value="">Loading available models...</option>';
+
+        $('model-help').textContent =
+            'Checking which models currently have workers...';
+
+        try {
+            const response = await fetch(
+                API_BASE + '/status/models',
+                {
+                    headers: { 'Client-Agent': CLIENT_AGENT }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Could not retrieve the model list.');
+            }
+
+            const models = await response.json();
+
+            if (!Array.isArray(models)) {
+                throw new Error('Unexpected model list response.');
+            }
+
+            const available = models
+                .filter(model =>
+                    model &&
+                    typeof model.name === 'string' &&
+                    Number(model.count || 0) > 0
+                )
+                .sort((a, b) =>
+                    Number(b.count || 0) - Number(a.count || 0)
+                );
+
+            modelSelect.innerHTML = '';
+
+            if (!available.length) {
+                modelSelect.innerHTML =
+                    '<option value="">No active workers found</option>';
+
+                $('model-help').textContent =
+                    'There are no currently available model workers. Try refreshing later.';
+
+                modelSelect.disabled = true;
+                return;
+            }
+
+            available.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.name;
+                option.textContent =
+                    `${model.name} (${model.count} workers)`;
+                modelSelect.appendChild(option);
+            });
+
+            modelSelect.disabled = false;
+
+            $('model-help').textContent =
+                `${available.length} models currently have available workers. Availability can change.`;
+
+            toast('AI Horde models loaded.', 'success');
+
+        } catch (error) {
+            console.error(error);
+
+            modelSelect.innerHTML =
+                '<option value="">Unable to load models</option>';
+
+            $('model-help').textContent =
+                'Could not connect to AI Horde. Check your connection and refresh.';
+
+            modelSelect.disabled = true;
+            toast(error.message, 'error');
+        }
+    }
+
+    $('refresh-models').addEventListener('click', loadModels);
+
+    function checkPrompt(prompt) {
+        const lower = prompt.toLowerCase();
+
+        return PROHIBITED_TERMS.filter(term =>
+            lower.includes(term)
+        );
+    }
+
+    function loadSafetyModel() {
+        if (!nsfwModelPromise) {
+            nsfwModelPromise = (async () => {
+                if (!window.tf || !window.nsfwjs) {
+                    throw new Error(
+                        'Safety libraries did not load. Check your connection.'
+                    );
+                }
+
+                await tf.ready();
+
+                return await nsfwjs.load(
+                    'https://cdn.jsdelivr.net/gh/infinitered/nsfwjs@master/models/mobilenet_v2/'
+                );
+            })().catch(error => {
+                nsfwModelPromise = null;
+                throw error;
+            });
+        }
+
+        return nsfwModelPromise;
+    }
+
+    async function moderateBlob(blob) {
+        if (!(blob instanceof Blob) ||
+            !blob.type.startsWith('image/')) {
+            throw new Error('The result is not a valid image.');
+        }
+
+        const model = await loadSafetyModel();
+        const objectUrl = URL.createObjectURL(blob);
+
+        try {
+            const image = new Image();
+            image.src = objectUrl;
+
+            await new Promise((resolve, reject) => {
+                image.onload = resolve;
+                image.onerror = () =>
+                    reject(new Error('Could not open image for safety checking.'));
+            });
+
+            const predictions = await model.classify(image);
+            const scores = {};
+
+            predictions.forEach(item => {
+                scores[item.className] = item.probability;
+            });
+
+            const flagged = Object.entries(NSFW_THRESHOLDS)
+                .filter(([name, threshold]) =>
+                    (scores[name] || 0) >= threshold
+                );
+
+            return {
+                safe: flagged.length === 0,
+                reason: flagged.map(item => item[0]).join(', ')
             };
 
-            function loadNsfwModel() {
-                if (!nsfwModelPromise) {
-                    nsfwModelPromise = (async () => {
-                        if (!window.tf || !window.nsfwjs) {
-                            throw new Error('Image safety model libraries could not be loaded.');
-                        }
-                        await tf.ready();
-                        // Use jsDelivr's CORS-enabled mirror of the official NSFWJS
-                        // MobileNetV2 model. nsfwjs.com currently does not reliably
-                        // return Access-Control-Allow-Origin for GitHub Pages clients.
-                        // Keep the trailing slash: NSFWJS appends model.json and shard files.
-                        return await nsfwjs.load(
-                            'https://cdn.jsdelivr.net/gh/infinitered/nsfwjs@master/models/mobilenet_v2/'
-                        );
-                    })().catch(error => {
-                        nsfwModelPromise = null;
-                        throw error;
-                    });
-                }
-                return nsfwModelPromise;
-            }
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
+    }
 
-            async function moderateImageBlob(imageBlob) {
-                if (!(imageBlob instanceof Blob) || !imageBlob.type.startsWith('image/')) {
-                    throw new Error('Generated result is not a valid image.');
-                }
+    function renderGallery() {
+        galleryGrid.innerHTML = '';
 
-                const model = await loadNsfwModel();
-                const objectUrl = URL.createObjectURL(imageBlob);
-                try {
-                    const image = new Image();
-                    image.crossOrigin = 'anonymous';
-                    image.src = objectUrl;
-                    await new Promise((resolve, reject) => {
-                        image.onload = resolve;
-                        image.onerror = () => reject(new Error('Could not load image for safety check.'));
-                    });
+        if (!storedImages.length) {
+            emptyGallery.style.display = 'block';
+            emptyGallery.textContent =
+                'Your generated images will appear here.';
+            return;
+        }
 
-                    const predictions = await model.classify(image);
-                    const scores = Object.fromEntries(predictions.map(item => [item.className, item.probability]));
-                    const flagged = Object.entries(NSFW_THRESHOLDS)
-                        .filter(([label, threshold]) => (scores[label] || 0) >= threshold);
+        emptyGallery.style.display = 'none';
 
-                    if (flagged.length) {
-                        return { safe: false, reason: flagged.map(([label]) => label).join(', '), scores };
-                    }
-                    return { safe: true, scores };
-                } finally {
-                    URL.revokeObjectURL(objectUrl);
-                }
-            }
+        storedImages.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'gallery-item';
 
-            async function moderateStoredImageData(imageData) {
-                const response = await fetch(imageData);
-                if (!response.ok) throw new Error('Could not read saved gallery image.');
-                return moderateImageBlob(await response.blob());
-            }
+            const img = document.createElement('img');
+            img.className = 'gallery-img';
+            img.alt = 'Saved generated image';
+            img.src = item.url;
 
-            async function initializeSafeGallery() {
-                // Do not render previously saved images until each one has passed scanning.
-                galleryGrid.innerHTML = '';
-                emptyGallery.style.display = 'block';
-                emptyGallery.textContent = 'Checking saved images for safety...';
-                try {
-                    await loadNsfwModel();
-                    const approved = [];
-                    let moderationFailed = false;
-                    let unsafeCount = 0;
-                    for (const item of storedImages) {
-                        try {
-                            const result = await moderateStoredImageData(item.url);
-                            if (result.safe) approved.push(item);
-                            else unsafeCount++;
-                        } catch (error) {
-                            // If any scan fails, preserve stored data but hide the gallery.
-                            // Never delete a user's saved image merely because the model is offline.
-                            moderationFailed = true;
-                            console.warn('Saved image was not displayed because moderation failed:', error);
-                            break;
-                        }
-                    }
+            const report = document.createElement('button');
+            report.className = 'report-btn';
+            report.type = 'button';
+            report.innerHTML = '<i class="fas fa-flag"></i>';
 
-                    if (moderationFailed) {
-                        emptyGallery.textContent = 'Gallery hidden because one or more saved images could not be checked. Please try again later.';
-                        return;
-                    }
+            const remove = document.createElement('button');
+            remove.className = 'delete-btn';
+            remove.type = 'button';
+            remove.innerHTML = '<i class="fas fa-times"></i>';
 
-                    if (unsafeCount > 0) {
-                        storedImages = approved;
-                        localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
-                    }
-                    emptyGallery.textContent = storedImages.length ? '' : 'No safe images in your gallery yet.';
-                    loadGalleryImages();
-                    if (unsafeCount > 0) {
-                        showToast(`${unsafeCount} unsafe saved image(s) removed from the gallery.`, 'error');
-                    }
-                } catch (error) {
-                    console.error('NSFW moderation initialization failed:', error);
-                    emptyGallery.textContent = 'Gallery hidden because the image safety checker could not load. Please try again later.';
-                    showToast('Image safety checker unavailable. Saved images are hidden for safety.', 'error');
-                }
-            }
+            card.append(img, report, remove);
+            galleryGrid.appendChild(card);
 
-            // Show toast notification
-            function showToast(message, type = '') {
-                toast.textContent = message;
-                toast.className = 'toast';
-                toast.classList.add(type, 'show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
+            img.addEventListener('click', () => openGalleryImage(index));
 
-            // Check prompt for prohibited terms
-            function checkPrompt(prompt) {
-                const lowerPrompt = prompt.toLowerCase();
-                const foundTerms = [];
-                
-                PROHIBITED_TERMS.forEach(term => {
-                    if (lowerPrompt.includes(term)) {
-                        foundTerms.push(term);
-                    }
-                });
-                
-                return foundTerms;
-            }
-
-            // Load gallery images
-            function loadGalleryImages() {
-                galleryGrid.innerHTML = '';
-                
-                if (storedImages.length === 0) {
-                    emptyGallery.style.display = 'block';
-                    return;
-                }
-                
-                emptyGallery.style.display = 'none';
-                
-                storedImages.forEach((imgData, index) => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    galleryItem.innerHTML = `
-                        <img src="${imgData.url}" alt="Generated image ${index}" class="gallery-img">
-                        <button class="report-btn" data-index="${index}">
-                            <i class="fas fa-flag"></i>
-                        </button>
-                        <button class="delete-btn" data-index="${index}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    `;
-                    galleryGrid.appendChild(galleryItem);
-                    
-                    // Add click event to view image
-                    galleryItem.querySelector('img').addEventListener('click', () => {
-                        viewImageInGallery(index);
-                    });
-                    
-                    // Add delete event
-                    galleryItem.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteImageFromGallery(index);
-                    });
-                    
-                    // Add report event
-                    galleryItem.querySelector('.report-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        showReportModal(index);
-                    });
-                });
-            }
-
-            // Show report modal
-            function showReportModal(index) {
-                currentlyReportingIndex = index;
-                reportModal.style.display = 'flex';
-            }
-
-            // Submit report
-            function submitReport() {
-                if (currentlyReportingIndex === null || currentlyReportingIndex >= storedImages.length) return;
-                
-                const reportReason = document.querySelector('input[name="report-reason"]:checked').value;
-                const reportDetails = document.getElementById('report-details').value;
-                
-                // In a real app, you would send this to your backend
-                console.log('Report submitted:', {
-                    imageIndex: currentlyReportingIndex,
-                    reason: reportReason,
-                    details: reportDetails,
-                    imageData: storedImages[currentlyReportingIndex]
-                });
-                
-                showToast('Thank you for your report. We will review this content.', 'success');
-                reportModal.style.display = 'none';
-                currentlyReportingIndex = null;
-                
-                // Reset form
-                document.getElementById('report-details').value = '';
-                document.querySelector('input[name="report-reason"][value="explicit"]').checked = true;
-            }
-
-            // View image from gallery
-            function viewImageInGallery(index) {
-                const imgData = storedImages[index];
-                resultImage.src = imgData.url;
-                
-                // Create a blob from the data URL for downloading
-                fetch(imgData.url)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        generatedImageBlob = blob;
-                        resultContainer.style.display = 'block';
-                        
-                        // Scroll to result
-                        resultContainer.scrollIntoView({ behavior: 'smooth' });
-                    });
-            }
-
-            // Delete image from gallery
-            function deleteImageFromGallery(index) {
+            remove.addEventListener('click', event => {
+                event.stopPropagation();
                 storedImages.splice(index, 1);
-                localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
-                loadGalleryImages();
-                showToast('Image deleted from gallery', 'success');
-                
-                // If the deleted image is currently displayed, hide the result container
-                if (resultImage.src.includes(storedImages[index]?.url)) {
-                    resultContainer.style.display = 'none';
-                    generatedImageBlob = null;
+                saveGalleryData();
+                renderGallery();
+                toast('Image deleted.', 'success');
+            });
+
+            report.addEventListener('click', event => {
+                event.stopPropagation();
+                reportingIndex = index;
+                reportModal.style.display = 'flex';
+            });
+        });
+    }
+
+    async function initializeGallery() {
+        if (!storedImages.length) {
+            renderGallery();
+            return;
+        }
+
+        emptyGallery.style.display = 'block';
+        emptyGallery.textContent =
+            'Checking saved images before displaying them...';
+
+        try {
+            await loadSafetyModel();
+
+            const approved = [];
+
+            for (const item of storedImages) {
+                const response = await fetch(item.url);
+
+                if (!response.ok) {
+                    throw new Error('Could not check a saved image.');
+                }
+
+                const result = await moderateBlob(await response.blob());
+
+                if (result.safe) {
+                    approved.push(item);
                 }
             }
 
-            // Store image locally
-            function storeImageLocally(imageBlob, prompt) {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    const imageData = {
-                        url: reader.result,
-                        timestamp: new Date().toISOString(),
+            const removed = storedImages.length - approved.length;
+            storedImages = approved;
+            saveGalleryData();
+            renderGallery();
+
+            if (removed) {
+                toast(
+                    `${removed} saved image(s) did not pass the safety check.`,
+                    'warning'
+                );
+            }
+
+        } catch (error) {
+            console.error('Gallery scan failed:', error);
+
+            // Preserve existing data if the checker cannot load.
+            galleryGrid.innerHTML = '';
+            emptyGallery.style.display = 'block';
+            emptyGallery.textContent =
+                'Gallery is temporarily hidden because saved images could not be checked. Your saved data has not been deleted.';
+
+            toast('Gallery safety check unavailable.', 'error');
+        }
+    }
+
+    async function openGalleryImage(index) {
+        const item = storedImages[index];
+        if (!item) return;
+
+        try {
+            const response = await fetch(item.url);
+            if (!response.ok) throw new Error('Could not open saved image.');
+
+            const blob = await response.blob();
+            const result = await moderateBlob(blob);
+
+            if (!result.safe) {
+                throw new Error('This image did not pass the safety check.');
+            }
+
+            showResult(blob);
+
+        } catch (error) {
+            toast(error.message, 'error');
+        }
+    }
+
+    function showResult(blob) {
+        generatedImageBlob = blob;
+
+        if (currentImageUrl) {
+            URL.revokeObjectURL(currentImageUrl);
+        }
+
+        currentImageUrl = URL.createObjectURL(blob);
+        resultImage.src = currentImageUrl;
+        resultContainer.style.display = 'block';
+
+        resultContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function storeImage(blob, prompt) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                storedImages.unshift({
+                    url: reader.result,
+                    timestamp: new Date().toISOString(),
+                    prompt,
+                    model: modelSelect.value,
+                    ratio: ratioSelect.value
+                });
+
+                storedImages = storedImages.slice(0, 30);
+                saveGalleryData();
+                renderGallery();
+                resolve();
+            };
+
+            reader.onerror = () =>
+                reject(new Error('Could not save image to gallery.'));
+
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    // Submit an image generation request.
+    generateBtn.addEventListener('click', async () => {
+        if (isGenerating) return;
+
+        const prompt = promptInput.value.trim();
+
+        if (!prompt) {
+            toast('Please enter an image description.', 'error');
+            return;
+        }
+
+        const flagged = checkPrompt(prompt);
+
+        if (flagged.length) {
+            $('flagged-terms').textContent =
+                'Please remove: ' + flagged.join(', ');
+
+            warningModal.style.display = 'flex';
+            return;
+        }
+
+        if (!modelSelect.value || modelSelect.disabled) {
+            toast('Please select an available AI Horde model.', 'error');
+            return;
+        }
+
+        if (!API_KEY) {
+            toast('AI Horde API key is missing.', 'error');
+            return;
+        }
+
+        const [width, height] =
+            ratioSelect.value.split('x').map(Number);
+
+        isGenerating = true;
+        generateBtn.disabled = true;
+
+        resultContainer.style.display = 'none';
+        generatedImageBlob = null;
+
+        setLoading('Submitting your image request...');
+        progress(5, 'Connecting to AI Horde...');
+
+        try {
+            const response = await fetch(
+                API_BASE + '/generate/async',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': API_KEY,
+                        'Client-Agent': CLIENT_AGENT
+                    },
+                    body: JSON.stringify({
                         prompt: prompt,
-                        style: document.getElementById('image-style').value,
-                        ratio: document.getElementById('image-ratio').value
-                    };
-                    
-                    storedImages.unshift(imageData);
-                    localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
-                    loadGalleryImages();
-                };
-                reader.readAsDataURL(imageBlob);
-            }
-
-            // Initialize gallery only after existing saved images have been scanned.
-            initializeSafeGallery();
-
-            // Generate image
-            generateBtn.addEventListener('click', async function() {
-                const prompt = document.getElementById('image-prompt').value.trim();
-                if (!prompt) {
-                    showToast('Please enter a description for your image', 'error');
-                    return;
-                }
-
-                // Check for prohibited terms
-                const flaggedTerms = checkPrompt(prompt);
-                if (flaggedTerms.length > 0) {
-                    flaggedTermsEl.textContent = `Flagged terms: ${flaggedTerms.join(', ')}`;
-                    warningModal.style.display = 'flex';
-                    return;
-                }
-
-                const style = document.getElementById('image-style').value;
-                const [width, height] = document.getElementById('image-ratio').value.split('x').map(Number);
-
-                // Show loading state
-                generateBtn.disabled = true;
-                loadingState.style.display = 'block';
-                resultContainer.style.display = 'none';
-                progressBar.style.width = '0%';
-                loadingText.textContent = 'Initializing image generation...';
-                progressText.textContent = 'Preparing request...';
-
-                try {
-                    // Submit to Stable Horde
-                    loadingText.textContent = 'Connecting to AI server...';
-                    progressText.textContent = 'Starting request...';
-
-                    const response = await fetch(IMAGE_API_ENDPOINT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': STABLE_HORDE_API_KEY
+                        params: {
+                            width,
+                            height,
+                            steps: 25,
+                            sampler_name: 'k_euler_a',
+                            cfg_scale: 7,
+                            n: 1
                         },
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            params: {
-                                width: width,
-                                height: height,
-                                steps: 30,
-                                sampler_name: "k_euler_a",
-                                cfg_scale: 7.5,
-                                n: 1
-                            },
-                            models: [style],
-                            nsfw: false
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Failed to submit image request');
-                    }
-
-                    const data = await response.json();
-                    imageJobId = data.id;
-                    loadingText.textContent = 'Image generation in progress...';
-                    progressText.textContent = 'Waiting in queue...';
-
-                    // Start polling for image status
-                    imageCheckInterval = setInterval(() => checkImageStatus(), 3000);
-
-                } catch (error) {
-                    console.error('Image generation error:', error);
-                    showToast('Failed to start image generation', 'error');
-                    resetGenerationState();
+                        models: [modelSelect.value],
+                        nsfw: false,
+                        censor_nsfw: true
+                    })
                 }
-            });
+            );
 
-            // Check image generation status
-            async function checkImageStatus() {
-                if (!imageJobId) return;
+            const data = await response.json();
 
-                try {
-                    const response = await fetch(`${CHECK_STATUS_ENDPOINT}${imageJobId}`);
-                    if (!response.ok) throw new Error('Failed to check status');
-                    
-                    const status = await response.json();
-                    
-                    if (status.faulted) {
-                        throw new Error('Image generation failed');
-                    }
-                    
-                    // Update queue position
-                    if (status.wait_time) {
-                        const waitTime = Math.round(status.wait_time);
-                        progressText.textContent = `Queue position: ${status.queue_position} • Est. wait: ${waitTime}s`;
-                    }
-                    
-                    // Update progress if generation has started
-                    if (status.finished && !status.done) {
-                        const progress = Math.round((status.finished / status.processing) * 100);
-                        progressBar.style.width = `${progress}%`;
-                        progressText.textContent = `Generating: ${progress}% complete (${status.finished}/${status.processing} steps)`;
-                    }
-                    
-                    // Check if generation is complete
-                    if (status.done) {
-                        clearInterval(imageCheckInterval);
-                        fetchGeneratedImage();
-                    }
-
-                } catch (error) {
-                    console.error('Error checking image status:', error);
-                    showToast('Failed to check generation status', 'error');
-                    clearInterval(imageCheckInterval);
-                    resetGenerationState();
-                }
+            if (!response.ok) {
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    `AI Horde returned error ${response.status}.`
+                );
             }
 
-            // Fetch the generated image
-            async function fetchGeneratedImage() {
-                try {
-                    loadingText.textContent = 'Finalizing your image...';
-                    progressText.textContent = 'Processing final details...';
-                    progressBar.style.width = '95%';
-
-                    const response = await fetch(`${STATUS_ENDPOINT}${imageJobId}`);
-                    if (!response.ok) throw new Error('Failed to fetch image status');
-                    
-                    const status = await response.json();
-
-                    if (status.generations && status.generations.length > 0) {
-                        const imgUrl = status.generations[0].img;
-                        progressText.textContent = 'Downloading your image...';
-                        
-                        const imgResponse = await fetch(imgUrl);
-                        if (!imgResponse.ok) throw new Error('Could not download generated image.');
-                        const candidateBlob = await imgResponse.blob();
-
-                        // Mandatory post-generation moderation: no storage, preview or download
-                        // until the actual image has passed the classifier.
-                        loadingText.textContent = 'Checking image safety...';
-                        progressText.textContent = 'Scanning generated image before display...';
-                        const moderation = await moderateImageBlob(candidateBlob);
-                        if (!moderation.safe) {
-                            generatedImageBlob = null;
-                            resultImage.removeAttribute('src');
-                            resultContainer.style.display = 'none';
-                            throw new Error('This image was blocked because it may contain nudity or sexually suggestive content.');
-                        }
-
-                        generatedImageBlob = candidateBlob;
-
-                        // Store and display only images that pass moderation.
-                        storeImageLocally(generatedImageBlob, document.getElementById('image-prompt').value);
-                        resultImage.src = URL.createObjectURL(generatedImageBlob);
-                        resultContainer.style.display = 'block';
-                        
-                        // Complete progress
-                        progressBar.style.width = '100%';
-                        progressText.textContent = 'Generation complete!';
-                        
-                        // Scroll to result
-                        setTimeout(() => {
-                            resultContainer.scrollIntoView({ behavior: 'smooth' });
-                        }, 300);
-                        
-                        showToast('Image generated successfully!', 'success');
-                    } else {
-                        throw new Error('No image generated');
-                    }
-                } catch (error) {
-                    console.error('Generated image blocked or failed:', error);
-                    showToast(error.message || 'Image could not be verified and was blocked.', 'error');
-                } finally {
-                    resetGenerationState();
-                }
+            if (!data.id) {
+                throw new Error('AI Horde did not return a job ID.');
             }
 
-            // Reset generation state
-            function resetGenerationState() {
-                generateBtn.disabled = false;
-                loadingState.style.display = 'none';
-                imageJobId = null;
-                if (imageCheckInterval) clearInterval(imageCheckInterval);
+            imageJobId = data.id;
+            generationStartedAt = Date.now();
+
+            setLoading('Waiting for an AI Horde worker...');
+            progress(10, 'Your request has been accepted.');
+
+            pollStatus();
+
+        } catch (error) {
+            console.error(error);
+            toast(error.message || 'Could not start generation.', 'error');
+            resetGeneration();
+        }
+    });
+
+    async function pollStatus() {
+        if (!imageJobId) return;
+
+        if (Date.now() - generationStartedAt > 20 * 60 * 1000) {
+            toast('The queue is taking too long. Please try again later.', 'error');
+            resetGeneration();
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                API_BASE + '/generate/check/' +
+                encodeURIComponent(imageJobId),
+                {
+                    headers: { 'Client-Agent': CLIENT_AGENT }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Could not check generation status.');
             }
 
-            // Download image
-            downloadBtn.addEventListener('click', function() {
-                if (!generatedImageBlob) {
-                    showToast('No image to download', 'error');
-                    return;
+            const status = await response.json();
+
+            if (status.faulted) {
+                throw new Error(
+                    'AI Horde could not complete this request. Try another model.'
+                );
+            }
+
+            if (status.wait_time !== undefined) {
+                setLoading('Waiting in the generation queue...');
+
+                progress(
+                    15,
+                    `Queue position: ${status.queue_position ?? 'unknown'} · Estimated wait: ${Math.round(status.wait_time)} seconds`
+                );
+            }
+
+            if (status.processing > 0 && !status.done) {
+                const percent = Math.round(
+                    (Number(status.finished || 0) /
+                    Number(status.processing)) * 100
+                );
+
+                setLoading('Generating your image...');
+                progress(20 + percent * .65, `Generation: ${percent}%`);
+            }
+
+            if (status.done) {
+                progress(90, 'Generation complete. Checking image...');
+                await fetchGeneratedImage();
+                return;
+            }
+
+            pollTimer = setTimeout(pollStatus, 4000);
+
+        } catch (error) {
+            console.error(error);
+            toast(error.message || 'Generation status error.', 'error');
+            resetGeneration();
+        }
+    }
+
+    async function fetchGeneratedImage() {
+        try {
+            setLoading('Retrieving generated image...');
+            progress(92, 'Downloading image...');
+
+            const response = await fetch(
+                API_BASE + '/generate/status/' +
+                encodeURIComponent(imageJobId),
+                {
+                    headers: { 'Client-Agent': CLIENT_AGENT }
                 }
+            );
 
-                const prompt = document.getElementById('image-prompt').value.trim().substring(0, 30);
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const filename = `ai-image-${prompt || 'creation'}-${timestamp}.png`;
-                
-                const url = URL.createObjectURL(generatedImageBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-                
-                showToast('Download started!', 'success');
-            });
+            if (!response.ok) {
+                throw new Error('Could not retrieve generated image.');
+            }
 
-            // Save to gallery
-            saveBtn.addEventListener('click', function() {
-                if (!generatedImageBlob) {
-                    showToast('No image to save', 'error');
-                    return;
-                }
-                
-                const prompt = document.getElementById('image-prompt').value.trim();
-                storeImageLocally(generatedImageBlob, prompt);
-                showToast('Image saved to gallery!', 'success');
-            });
+            const status = await response.json();
 
-            // Delete current image
-            deleteBtn.addEventListener('click', function() {
-                if (!generatedImageBlob) {
-                    showToast('No image to delete', 'error');
-                    return;
-                }
-                
-                generatedImageBlob = null;
-                resultImage.src = '';
-                resultContainer.style.display = 'none';
-                showToast('Image removed', 'success');
-            });
+            if (!status.generations || !status.generations.length) {
+                throw new Error('AI Horde returned no image.');
+            }
 
-            // Modal handlers
-            cancelGenerateBtn.addEventListener('click', function() {
-                warningModal.style.display = 'none';
-                resetGenerationState();
-            });
+            const generation = status.generations[0];
 
-            confirmGenerateBtn.addEventListener('click', function() {
-                warningModal.style.display = 'none';
-                generateBtn.click(); // Trigger generation after warning
-            });
+            if (generation.censored === true) {
+                throw new Error(
+                    'AI Horde censored this result. Try a different prompt or model.'
+                );
+            }
 
-            cancelReportBtn.addEventListener('click', function() {
-                reportModal.style.display = 'none';
-                currentlyReportingIndex = null;
-            });
+            if (!generation.img) {
+                throw new Error('The image URL was missing.');
+            }
 
-            submitReportBtn.addEventListener('click', submitReport);
+            const imageResponse = await fetch(generation.img);
 
-            showTermsBtn.addEventListener('click', function() {
-                termsModal.style.display = 'flex';
-            });
+            if (!imageResponse.ok) {
+                throw new Error('Could not download generated image.');
+            }
 
-            acceptTermsBtn.addEventListener('click', function() {
-                termsModal.style.display = 'none';
-            });
+            const blob = await imageResponse.blob();
 
-            // Close modals when clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === warningModal) {
-                    warningModal.style.display = 'none';
-                }
-                if (event.target === reportModal) {
-                    reportModal.style.display = 'none';
-                    currentlyReportingIndex = null;
-                }
-                if (event.target === termsModal) {
-                    termsModal.style.display = 'none';
-                }
-            });
+            setLoading('Checking image safety...');
+            progress(96, 'Scanning image before display...');
+
+            const moderation = await moderateBlob(blob);
+
+            if (!moderation.safe) {
+                throw new Error(
+                    'This image was blocked because it may contain inappropriate content.'
+                );
+            }
+
+            showResult(blob);
+            await storeImage(blob, promptInput.value.trim());
+
+            progress(100, 'Image generated and checked.');
+            toast('Image generated successfully!', 'success');
+
+        } catch (error) {
+            console.error('Image processing error:', error);
+
+            generatedImageBlob = null;
+            resultImage.removeAttribute('src');
+            resultContainer.style.display = 'none';
+
+            toast(
+                error.message ||
+                'The image could not be verified and was not displayed.',
+                'error'
+            );
+
+        } finally {
+            resetGeneration();
+        }
+    }
+
+    // Download only a verified image.
+    downloadBtn.addEventListener('click', () => {
+        if (!generatedImageBlob) {
+            toast('No verified image available.', 'error');
+            return;
+        }
+
+        const url = URL.createObjectURL(generatedImageBlob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'imagera-' +
+            new Date().toISOString().replace(/[:.]/g, '-') +
+            '.png';
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        toast('Download started.', 'success');
+    });
+
+    // Recheck before saving.
+    saveBtn.addEventListener('click', async () => {
+        if (!generatedImageBlob) {
+            toast('No verified image available.', 'error');
+            return;
+        }
+
+        try {
+            const result = await moderateBlob(generatedImageBlob);
+
+            if (!result.safe) {
+                throw new Error('Image did not pass safety checking.');
+            }
+
+            await storeImage(
+                generatedImageBlob,
+                promptInput.value.trim()
+            );
+
+            toast('Image saved to your gallery.', 'success');
+
+        } catch (error) {
+            toast(error.message, 'error');
+        }
+    });
+
+    deleteBtn.addEventListener('click', () => {
+        generatedImageBlob = null;
+        resultImage.removeAttribute('src');
+
+        if (currentImageUrl) {
+            URL.revokeObjectURL(currentImageUrl);
+            currentImageUrl = null;
+        }
+
+        resultContainer.style.display = 'none';
+        toast('Current image removed.', 'success');
+    });
+
+    // Report interface. This page does not have a report server.
+    $('cancel-report').addEventListener('click', () => {
+        reportModal.style.display = 'none';
+        reportingIndex = null;
+    });
+
+    $('submit-report').addEventListener('click', () => {
+        if (reportingIndex === null ||
+            !storedImages[reportingIndex]) return;
+
+        const reason = document.querySelector(
+            'input[name="report-reason"]:checked'
+        );
+
+        console.log('Report details:', {
+            reason: reason ? reason.value : 'other',
+            details: $('report-details').value,
+            image: storedImages[reportingIndex]
         });
 
-        // Detect mobile back button or browser back
-        window.addEventListener("pageshow", function (event) {
-            // Replace current page with Ai media.html if user tries to go back
-            history.replaceState(null, "", location.href);
-            history.pushState(null, "", location.href);
-        });
+        reportModal.style.display = 'none';
+        reportingIndex = null;
+        $('report-details').value = '';
 
-        window.addEventListener("popstate", function (event) {
-            // Redirect to Ai media.html
-            window.location.href = "Ai media.html";
-        });
+        toast(
+            'Report information recorded locally only. It has not been sent to a server.',
+            'warning'
+        );
+    });
 
-        // Optional: also handle back button click in your navbar
-        document.getElementById("back-button").addEventListener("click", function() {
-            window.location.href = "Ai media.html";
-        });
-    </script>
+    $('cancel-generate').addEventListener('click', () => {
+        warningModal.style.display = 'none';
+    });
+
+    $('show-terms').addEventListener('click', () => {
+        termsModal.style.display = 'flex';
+    });
+
+    $('accept-terms').addEventListener('click', () => {
+        termsModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', event => {
+        if (event.target === warningModal) {
+            warningModal.style.display = 'none';
+        }
+
+        if (event.target === reportModal) {
+            reportModal.style.display = 'none';
+            reportingIndex = null;
+        }
+
+        if (event.target === termsModal) {
+            termsModal.style.display = 'none';
+        }
+    });
+
+    $('back-button').addEventListener('click', () => {
+        window.location.href = 'Ai media.html';
+    });
+
+    // Initialise app.
+    loadModels();
+    initializeGallery();
+});
+</script>
+
 </body>
 </html>
-
