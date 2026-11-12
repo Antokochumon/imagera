@@ -552,6 +552,11 @@
             font-size: 1.2rem;
         }
     </style>
+
+    <!-- Browser-side NSFW image moderation. No API key or account required. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
+
 </head>
 <body>
     <button id="back-button" class="back-button" onclick="window.location.href='Ai media.html'">
@@ -812,7 +817,115 @@
             let imageJobId = null;
             let imageCheckInterval = null;
             let storedImages = JSON.parse(localStorage.getItem('aiGeneratedImages') || '[]');
+
             let currentlyReportingIndex = null;
+
+            // NSFW moderation runs locally in the user's browser using the open-source
+            // NSFWJS classifier. It requires no API key or user account.
+            // Fail closed: if the model cannot load or classify an image, do not show it.
+            let nsfwModelPromise = null;
+            const NSFW_THRESHOLDS = {
+                Porn: 0.15,
+                Hentai: 0.15,
+                Sexy: 0.35
+            };
+
+            function loadNsfwModel() {
+                if (!nsfwModelPromise) {
+                    nsfwModelPromise = (async () => {
+                        if (!window.tf || !window.nsfwjs) {
+                            throw new Error('Image safety model libraries could not be loaded.');
+                        }
+                        await tf.ready();
+                        return await nsfwjs.load('https://nsfwjs.com/model/');
+                    })().catch(error => {
+                        nsfwModelPromise = null;
+                        throw error;
+                    });
+                }
+                return nsfwModelPromise;
+            }
+
+            async function moderateImageBlob(imageBlob) {
+                if (!(imageBlob instanceof Blob) || !imageBlob.type.startsWith('image/')) {
+                    throw new Error('Generated result is not a valid image.');
+                }
+
+                const model = await loadNsfwModel();
+                const objectUrl = URL.createObjectURL(imageBlob);
+                try {
+                    const image = new Image();
+                    image.crossOrigin = 'anonymous';
+                    image.src = objectUrl;
+                    await new Promise((resolve, reject) => {
+                        image.onload = resolve;
+                        image.onerror = () => reject(new Error('Could not load image for safety check.'));
+                    });
+
+                    const predictions = await model.classify(image);
+                    const scores = Object.fromEntries(predictions.map(item => [item.className, item.probability]));
+                    const flagged = Object.entries(NSFW_THRESHOLDS)
+                        .filter(([label, threshold]) => (scores[label] || 0) >= threshold);
+
+                    if (flagged.length) {
+                        return { safe: false, reason: flagged.map(([label]) => label).join(', '), scores };
+                    }
+                    return { safe: true, scores };
+                } finally {
+                    URL.revokeObjectURL(objectUrl);
+                }
+            }
+
+            async function moderateStoredImageData(imageData) {
+                const response = await fetch(imageData);
+                if (!response.ok) throw new Error('Could not read saved gallery image.');
+                return moderateImageBlob(await response.blob());
+            }
+
+            async function initializeSafeGallery() {
+                // Do not render previously saved images until each one has passed scanning.
+                galleryGrid.innerHTML = '';
+                emptyGallery.style.display = 'block';
+                emptyGallery.textContent = 'Checking saved images for safety...';
+                try {
+                    await loadNsfwModel();
+                    const approved = [];
+                    let moderationFailed = false;
+                    let unsafeCount = 0;
+                    for (const item of storedImages) {
+                        try {
+                            const result = await moderateStoredImageData(item.url);
+                            if (result.safe) approved.push(item);
+                            else unsafeCount++;
+                        } catch (error) {
+                            // If any scan fails, preserve stored data but hide the gallery.
+                            // Never delete a user's saved image merely because the model is offline.
+                            moderationFailed = true;
+                            console.warn('Saved image was not displayed because moderation failed:', error);
+                            break;
+                        }
+                    }
+
+                    if (moderationFailed) {
+                        emptyGallery.textContent = 'Gallery hidden because one or more saved images could not be checked. Please try again later.';
+                        return;
+                    }
+
+                    if (unsafeCount > 0) {
+                        storedImages = approved;
+                        localStorage.setItem('aiGeneratedImages', JSON.stringify(storedImages));
+                    }
+                    emptyGallery.textContent = storedImages.length ? '' : 'No safe images in your gallery yet.';
+                    loadGalleryImages();
+                    if (unsafeCount > 0) {
+                        showToast(`${unsafeCount} unsafe saved image(s) removed from the gallery.`, 'error');
+                    }
+                } catch (error) {
+                    console.error('NSFW moderation initialization failed:', error);
+                    emptyGallery.textContent = 'Gallery hidden because the image safety checker could not load. Please try again later.';
+                    showToast('Image safety checker unavailable. Saved images are hidden for safety.', 'error');
+                }
+            }
 
             // Show toast notification
             function showToast(message, type = '') {
@@ -963,8 +1076,8 @@
                 reader.readAsDataURL(imageBlob);
             }
 
-            // Initialize gallery
-            loadGalleryImages();
+            // Initialize gallery only after existing saved images have been scanned.
+            initializeSafeGallery();
 
             // Generate image
             generateBtn.addEventListener('click', async function() {
@@ -1096,12 +1209,25 @@
                         progressText.textContent = 'Downloading your image...';
                         
                         const imgResponse = await fetch(imgUrl);
-                        generatedImageBlob = await imgResponse.blob();
+                        if (!imgResponse.ok) throw new Error('Could not download generated image.');
+                        const candidateBlob = await imgResponse.blob();
 
-                        // Store image locally
+                        // Mandatory post-generation moderation: no storage, preview or download
+                        // until the actual image has passed the classifier.
+                        loadingText.textContent = 'Checking image safety...';
+                        progressText.textContent = 'Scanning generated image before display...';
+                        const moderation = await moderateImageBlob(candidateBlob);
+                        if (!moderation.safe) {
+                            generatedImageBlob = null;
+                            resultImage.removeAttribute('src');
+                            resultContainer.style.display = 'none';
+                            throw new Error('This image was blocked because it may contain nudity or sexually suggestive content.');
+                        }
+
+                        generatedImageBlob = candidateBlob;
+
+                        // Store and display only images that pass moderation.
                         storeImageLocally(generatedImageBlob, document.getElementById('image-prompt').value);
-
-                        // Display image
                         resultImage.src = URL.createObjectURL(generatedImageBlob);
                         resultContainer.style.display = 'block';
                         
@@ -1119,8 +1245,8 @@
                         throw new Error('No image generated');
                     }
                 } catch (error) {
-                    console.error('Error fetching image:', error);
-                    showToast('Failed to download generated image', 'error');
+                    console.error('Generated image blocked or failed:', error);
+                    showToast(error.message || 'Image could not be verified and was blocked.', 'error');
                 } finally {
                     resetGenerationState();
                 }
