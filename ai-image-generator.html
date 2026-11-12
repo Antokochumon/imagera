@@ -709,14 +709,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_KEY = '0000000000';
     const CLIENT_AGENT = 'Imagera:1.1:antokochumon.github.io';
     const MAX_MODEL_RETRIES = 3;
-    const PROHIBITED_TERMS = [
-        'pornography', 'pornographic', 'hentai', 'nude', 'nudity', 'naked',
-        'child porn', 'child pornography', 'underage sexual', 'sexual abuse',
-        'rape', 'bestiality', 'graphic violence'
-    ];
+ const PROHIBITED_TERMS = [
+    // Explicit sexual content
+    'porn',
+    'pornography',
+    'pornographic',
+    'hentai',
+    'erotic',
+    'erotica',
+    'explicit sexual',
+    'sexual intercourse',
+    'sexual activity',
+    'sex act',
+    'sexual content',
+    'adult content',
+
+    // Nudity
+    'nude',
+    'nudity',
+    'naked',
+    'topless',
+    'bottomless',
+    'fully nude',
+    'exposed breasts',
+    'exposed genitals',
+    'visible nipples',
+
+    // Suggestive poses and clothing
+    'sexy',
+    'seductive',
+    'sensual',
+    'provocative',
+    'lingerie',
+    'underwear',
+    'panties',
+    'thong',
+    'bra',
+    'lace underwear',
+    'see through lingerie',
+    'transparent lingerie',
+    'revealing outfit',
+    'revealing clothes',
+    'fetish',
+    'bondage',
+    'striptease',
+    'stripper',
+
+    // Sexual violence and exploitation
+    'sexual abuse',
+    'sexual assault',
+    'rape',
+    'forced sexual',
+    'non consensual sex',
+    'bestiality',
+    'child sexual abuse',
+    'child pornography',
+    'child porn',
+    'underage sexual',
+
+    // Graphic violence
+    'graphic violence',
+    'gore',
+    'dismemberment',
+    'graphic injury',
+    'torture'
+];
     // NSFWJS's "Sexy" class often flags ordinary portraits. Only use it at a
     // very high confidence; explicit classes have stricter, lower thresholds.
-    const NSFW_THRESHOLDS = { Porn: 0.75, Hentai: 0.75, Sexy: 0.97 };
+    const NSFW_THRESHOLDS = { Porn: 0.75, Hentai: 0.75, Sexy: 0.75 };
 
     let storedImages = [];
     let generatedImageBlob = null;
